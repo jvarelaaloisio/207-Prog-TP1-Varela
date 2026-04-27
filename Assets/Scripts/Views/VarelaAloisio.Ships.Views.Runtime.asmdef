@@ -1,0 +1,17 @@
+{
+    "name": "VarelaAloisio.Ships.Views.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6d4ce2d10ca598142b351f820ba9fb88",
+        "GUID:4c483d07274cb7247b63fc209a9ff387"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
