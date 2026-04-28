@@ -148,8 +148,8 @@ GameObject:
   - component: {fileID: 3334928349627393081}
   - component: {fileID: 5249708677399479519}
   - component: {fileID: 3771133000371958180}
-  - component: {fileID: 6528640586562178037}
   - component: {fileID: 7960343308792626986}
+  - component: {fileID: 6898201992502308620}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -215,7 +215,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 10
---- !u!114 &6528640586562178037
+--- !u!114 &7960343308792626986
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -224,9 +224,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 6870012665881646387}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 0.03815789, g: 0.025, b: 0.05, a: 1}
+  m_EffectDistance: {x: 2, y: 2}
+  m_UseGraphicAlpha: 1
+--- !u!114 &6898201992502308620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6870012665881646387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69b60c8b219b4dd4a3a163044cae0cde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VarelaAloisio.Ships.UI.Runtime::CustomButton
   m_Navigation:
     m_Mode: 3
     m_WrapAround: 0
@@ -236,13 +251,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0, g: 0.6329787, b: 1, a: 0.14901961}
-    m_HighlightedColor: {r: 0.5053191, g: 0, b: 1, a: 0.14901961}
-    m_PressedColor: {r: 0.12531914, g: 0, b: 0.248, a: 0.2509804}
+    m_NormalColor: {r: 0, g: 0.6313726, b: 1, a: 0.14901961}
+    m_HighlightedColor: {r: 0.5058824, g: 0, b: 1, a: 0.14901961}
+    m_PressedColor: {r: 0.1254902, g: 0, b: 0.24705882, a: 0.2509804}
     m_SelectedColor: {r: 0, g: 0.6313726, b: 1, a: 0.14901961}
-    m_DisabledColor: {r: 0.78431374, g: 0.3168628, b: 0.3168628, a: 0.14901961}
+    m_DisabledColor: {r: 0.78431374, g: 0.31764707, b: 0.31764707, a: 0.14901961}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.2
+    m_FadeDuration: 0.1
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -259,18 +274,3 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7960343308792626986
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6870012665881646387}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
-  m_EffectColor: {r: 0.03815789, g: 0.025, b: 0.05, a: 1}
-  m_EffectDistance: {x: 2, y: 2}
-  m_UseGraphicAlpha: 1

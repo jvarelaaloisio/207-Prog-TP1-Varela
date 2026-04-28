@@ -756,7 +756,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 80}
+  m_SizeDelta: {x: 700, y: 80}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1062821373
 MonoBehaviour:
@@ -778,7 +778,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Ships
+  m_text: Ships gone rogue
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -811,9 +811,9 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -1008,6 +1008,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 18eb851470ff68145b7185d92f854f48, type: 3}
+--- !u!114 &1150244934 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6898201992502308620, guid: 18eb851470ff68145b7185d92f854f48, type: 3}
+  m_PrefabInstance: {fileID: 1150244933}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69b60c8b219b4dd4a3a163044cae0cde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VarelaAloisio.Ships.UI.Runtime::CustomButton
 --- !u!1001 &1456039230
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1109,6 +1120,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 18eb851470ff68145b7185d92f854f48, type: 3}
+--- !u!114 &1456039231 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6898201992502308620, guid: 18eb851470ff68145b7185d92f854f48, type: 3}
+  m_PrefabInstance: {fileID: 1456039230}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69b60c8b219b4dd4a3a163044cae0cde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VarelaAloisio.Ships.UI.Runtime::CustomButton
 --- !u!1 &1565302114
 GameObject:
   m_ObjectHideFlags: 0
@@ -1353,8 +1375,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1601f0c5d991c004592ee34ed9dc0586, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: '::'
-  buttons: []
+  m_EditorClassIdentifier: VarelaAloisio.Ships.Management.Runtime::Navigator
+  playButton: {fileID: 1604674571193405070}
+  creditsButton: {fileID: 1456039231}
+  exitButton: {fileID: 1150244934}
+  pointee: {fileID: 18141596}
 --- !u!1 &1715570753
 GameObject:
   m_ObjectHideFlags: 0
@@ -1632,6 +1657,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 18eb851470ff68145b7185d92f854f48, type: 3}
+--- !u!114 &1604674571193405070 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6898201992502308620, guid: 18eb851470ff68145b7185d92f854f48, type: 3}
+  m_PrefabInstance: {fileID: 1604674571193405069}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69b60c8b219b4dd4a3a163044cae0cde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VarelaAloisio.Ships.UI.Runtime::CustomButton
 --- !u!33 &4760708760772983242
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1743,7 +1779,7 @@ LookAtConstraint:
   m_WorldUpObject: {fileID: 0}
   m_UseUpObject: 0
   m_Active: 1
-  m_IsLocked: 0
+  m_IsLocked: 1
   m_Sources:
   - sourceTransform: {fileID: 18141596}
     weight: 1
