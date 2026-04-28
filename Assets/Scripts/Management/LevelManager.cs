@@ -1,11 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Core.Game;
 using Core.Game.Enums;
 using Core.Services;
 using Core.Utils;
-using HealthSystem;
-using HealthSystem.Runtime;
 using HealthSystem.Runtime.Components;
 using Units;
 using UnityEngine;
@@ -13,7 +13,7 @@ using VarelaAloisio.Core;
 
 namespace Management
 {
-    public class LevelManager : MonoBehaviourAsync
+    public class LevelManager : MonoBehaviourAsync, ILevelManager
     {
         [Serializable]
         public class SpawnConfiguration : ISerializationCallbackReceiver
@@ -50,7 +50,14 @@ namespace Management
             public void OnAfterDeserialize()
             { }
         }
+
+        [field: SerializeField] public int Level { get; private set; }
         [SerializeField] private SpawnConfiguration[] spawns = Array.Empty<SpawnConfiguration>();
+        private readonly Dictionary<Team, int> _deathsPerTeam = new ();
+
+        /// <inheritdoc />
+        public event Action<Team> OnTeamDefeated;
+
         private void Start()
         {
             if (!Service.TryGet(out IUnitsRepository unitsRepository))
@@ -60,6 +67,7 @@ namespace Management
                 return;
             }
 
+            unitsRepository.OnShipDestroyed += HandleShipDestroyed;
             foreach (SpawnConfiguration configuration in spawns)
                 Spawn(unitsRepository, configuration);
 
@@ -92,6 +100,17 @@ namespace Management
             }
         }
 
+        private void HandleShipDestroyed(IShip ship, Team team)
+        {
+            if (!_deathsPerTeam.TryAdd(team, 1))
+                _deathsPerTeam[team]++;
+            SpawnConfiguration config = spawns.FirstOrDefault(spawn => spawn.Team == team);
+            if (config is null)
+                return;
+            if (config.Quantity <= _deathsPerTeam[team])
+                OnTeamDefeated?.Invoke(team);
+        }
+
         private async void DoSpawnPeriodically(Factory<IShip> factory,
                                                Factory<IBullet> primaryBulletFactory,
                                                Factory<IBullet> secondaryBulletFactory,
@@ -112,8 +131,7 @@ namespace Management
             }
         }
 
-        //TODO: Add controller
-        private static IShip SpawnShip(Factory<IShip> factory,
+        private IShip SpawnShip(Factory<IShip> factory,
                                        Pose pose,
                                        Factory<IBullet> primaryBulletFactory,
                                        Factory<IBullet> secondaryBulletFactory,
@@ -127,7 +145,7 @@ namespace Management
             ship.Inject(primaryBulletFactory, secondaryBulletFactory, team);
             if (controllerPrefab)
             {
-                ShipController controller = Instantiate(controllerPrefab);
+                ShipController controller = Instantiate(controllerPrefab, transform);
                 controller.Inject(ship);
             }
 
@@ -147,5 +165,9 @@ namespace Management
                 Gizmos.DrawIcon(enemySpawnPoint.Pose.position, "BuildSettings.Android On@2x", true, Color.darkRed);
             }
         }
+
+        /// <inheritdoc />
+        public int GetShipsCountForTeam(Team team)
+            => spawns.Aggregate(0, (count, config) => config.Team == team ? count : count + config.Quantity);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Core.Game;
 using Core.Game.Enums;
 using Core.Services;
@@ -37,6 +38,12 @@ namespace Units
 
     #region Ships
 
+        /// <inheritdoc />
+        public event Action<IShip, Team> OnShipSpawned;
+
+        /// <inheritdoc />
+        public event Action<IShip, Team> OnShipDestroyed;
+
         public Factory<IShip> GetShipFactory(ShipType type)
         {
             return type switch
@@ -48,43 +55,49 @@ namespace Units
         }
 
         /// <inheritdoc />
-        public bool TryGetShipsOfType(ShipType type, out IReadOnlyList<IShip> result)
+        public bool TryGetShipsOfType(ShipType type, out IShip[] result)
         {
             bool found = _ships.TryGetValue(type, out var ships);
-            result = ships;
+            result = new IShip[ships?.Count ?? 0];
+            ships?.CopyTo(result);
             return found;
         }
 
         //TODO: Use InstantiateAsync to instantiate multiple objects
         //TODO: Hook to pool
         private IShip SpawnPlayer()
-        {
-            Ship ship = Instantiate(playerShipPrefab, _shipsParent);
-            if (_ships.TryGetValue(ShipType.Player, out var ships))
-                ships.Add(ship);
-            else
-                _ships.Add(ShipType.Player, new() { ship });
-            return ship;
-        }
+            => SpawnShip(playerShipPrefab, ShipType.Player, Team.Player);
 
         private IShip SpawnEnemy()
+            => SpawnShip(enemyShipPrefab, ShipType.Enemy, Team.Enemy);
+
+        private IShip SpawnGenericShip()
+            => SpawnShip(shipPrefab, ShipType.None, Team.None);
+
+        private IShip SpawnShip(Ship prefab, ShipType type, Team team)
         {
-            Ship ship = Instantiate(enemyShipPrefab, _shipsParent);
-            if (_ships.TryGetValue(ShipType.Enemy, out var ships))
+            Ship ship = Instantiate(prefab, _shipsParent);
+            ship.name = $"Ship ({type})";
+            ship.OnKill += RemoveShip;
+            if (_ships.TryGetValue(type, out var ships))
                 ships.Add(ship);
             else
-                _ships.Add(ShipType.Enemy, new() { ship });
+                _ships.Add(type, new() { ship });
+            OnShipSpawned?.Invoke(ship, team);
             return ship;
         }
 
-        private IShip SpawnGenericShip()
+        private void RemoveShip(IShip destroyedShip)
         {
-            Ship ship = Instantiate(shipPrefab, _shipsParent);
-            if (_ships.TryGetValue(ShipType.None, out var ships))
-                ships.Add(ship);
-            else
-                _ships.Add(ShipType.None, new() { ship });
-            return ship;
+            OnShipDestroyed?.Invoke(destroyedShip, destroyedShip.Team);
+            foreach ((ShipType type, var ships) in _ships)
+            {
+                IShip ship = ships.FirstOrDefault(ship => ReferenceEquals(ship, destroyedShip));
+                if (ship is null)
+                    continue;
+                _ships[type].Remove(ship);
+                return;
+            }
         }
 
         //TODO: Return to pull
@@ -106,10 +119,11 @@ namespace Units
         }
         
         /// <inheritdoc />
-        public bool TryGetBulletsOfType(BulletType type, out IReadOnlyList<IBullet> result)
+        public bool TryGetBulletsOfType(BulletType type, out IBullet[] result)
         {
             bool found = _bullets.TryGetValue(type, out var bullets);
-            result = bullets;
+            result = new IBullet[bullets?.Count ?? 0];
+            bullets?.CopyTo(result);
             return found;
         }
 

@@ -12,7 +12,6 @@ namespace Controllers
         [SerializeField] private InputActionReference shootAction;
         private CancellationTokenSource _shootSource;
 
-        /// <inheritdoc />
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -51,6 +50,13 @@ namespace Controllers
             }
         }
 
+        /// <inheritdoc />
+        public override void Inject(IShip ship)
+        {
+            base.Inject(ship);
+            ship.OnKill += DestroySelf;
+        }
+
         private void HandleMove(InputAction.CallbackContext input)
         {
             if (Ship is null)
@@ -68,5 +74,8 @@ namespace Controllers
 
         private void StopShooting(InputAction.CallbackContext obj)
             => TokenUtils.CancelAndDispose(ref _shootSource);
+
+        private void DestroySelf(IShip _)
+            => Destroy(gameObject);
     }
 }

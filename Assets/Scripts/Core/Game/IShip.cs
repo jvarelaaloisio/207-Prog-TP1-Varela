@@ -11,6 +11,7 @@ namespace Core.Game
         event Action<IShip> OnKill;
         GameObject gameObject { get; }
         Transform transform { get; }
+        Team Team { get; }
         Vector2 Direction { get; set; }
         float MaxSpeed { get; }
         void ShootPrimaryPeriodically(CancellationToken token, float periodOverride = -1f);
@@ -23,5 +24,7 @@ namespace Core.Game
         /// <param name="source">Source for the blockage. Used for debugging</param>
         /// <param name="reEnableToken">When this token is cancelled, the rotation control will be re-enabled.</param>
         void OverrideRotation(string source, CancellationToken reEnableToken);
+
+        void Kill();
     }
 }

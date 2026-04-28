@@ -3,18 +3,21 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class CustomButton : Button
+namespace UI
 {
-    public Action<Transform> RequestPointer;
-    public override void OnSelect(BaseEventData eventData)
+    public class CustomButton : Button
     {
-        base.OnSelect(eventData);
-        RequestPointer?.Invoke(transform);
-    }
+        public Action<Transform> RequestPointer;
+        public override void OnSelect(BaseEventData eventData)
+        {
+            base.OnSelect(eventData);
+            RequestPointer?.Invoke(transform);
+        }
 
-    public override void OnPointerEnter(PointerEventData eventData)
-    {
-        base.OnPointerEnter(eventData);
-        RequestPointer(transform);
+        public override void OnPointerEnter(PointerEventData eventData)
+        {
+            base.OnPointerEnter(eventData);
+            RequestPointer(transform);
+        }
     }
 }

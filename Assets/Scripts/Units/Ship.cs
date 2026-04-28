@@ -10,7 +10,7 @@ using VarelaAloisio.Core.Attributes;
 
 namespace Units
 {
-    public class Ship : MonoBehaviour, IShip
+    public class Ship : MonoBehaviourAsync, IShip
     {
         [Serializable]
         private class TeamConfiguration
@@ -66,6 +66,9 @@ namespace Units
         [field: SerializeField, ReadOnly] public bool IsDrifting { get; private set; } = false;
         [field: SerializeField, ReadOnly] public float CurrentAngle { get; private set; }
         [field: SerializeField, ReadOnly] public float CurrentSpeed { get; private set; }
+
+        public Team Team => team;
+
         [field: SerializeField, ReadOnly] public Vector2 Direction { get; set; }
 
         private void Reset()
@@ -126,7 +129,8 @@ namespace Units
             }
 
             int muzzleIndex = 0;
-            while (!token.IsCancellationRequested)
+            while (!token.IsCancellationRequested
+                   && !disableCancellationToken.IsCancellationRequested)
             {
                 Transform muzzle = muzzles[muzzleIndex++ % muzzles.Count];
                 IBullet bullet = _secondaryBulletFactory.Get();

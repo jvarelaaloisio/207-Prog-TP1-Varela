@@ -4,6 +4,7 @@ using System.Threading;
 using Core.Game;
 using Core.Game.Enums;
 using Core.Services;
+using Units;
 using UnityEngine;
 using VarelaAloisio.Core;
 
@@ -15,6 +16,7 @@ namespace Controllers
         [SerializeField] private float shootingDelay = 1;
         [SerializeField] private float shootPeriod = 2;
         private IShip _playerShip;
+        private bool _hasPlayerDied = false;
 
         private void Awake()
         {
@@ -30,7 +32,7 @@ namespace Controllers
                 return;
             }
 
-            IReadOnlyList<IShip> ships = null;
+            IShip[] ships = null;
             while (!disableCancellationToken.IsCancellationRequested
                    && !unitsRepository.TryGetShipsOfType(ShipType.Player, out ships))
                 await Awaitable.NextFrameAsync();
@@ -38,11 +40,16 @@ namespace Controllers
                 return;
 
             _playerShip = ships.FirstOrDefault();
-            if (_playerShip is null)
+            if (_playerShip is not null)
+                _playerShip.OnKill += HandlePlayerDied;
+            else
+            {
                 Debug.LogError($"Player ship not found");
+                _hasPlayerDied = true;
+                gameObject.SetActive(false);
+            }
         }
 
-        /// <inheritdoc />
         public override void Inject(IShip ship)
         {
             base.Inject(ship);
@@ -57,9 +64,9 @@ namespace Controllers
 
         private void Update()
         {
-            if (Ship is null || !Ship.gameObject || _playerShip is null)
+            if (Ship is null || !Ship.transform || _hasPlayerDied)
                 return;
-            Ship.gameObject.transform.up = ((_playerShip?.transform?.position ?? Vector3.zero) - Ship.transform.position).normalized;
+            Ship.transform.up = ((_playerShip?.transform?.position ?? Vector3.zero) - Ship.transform.position).normalized;
         }
 
         private async void FollowPath(CancellationToken token)
@@ -106,5 +113,8 @@ namespace Controllers
 
         private void DestroySelf(IShip _)
             => Destroy(gameObject);
+
+        private void HandlePlayerDied(IShip obj)
+            => _hasPlayerDied = true;
     }
 }
