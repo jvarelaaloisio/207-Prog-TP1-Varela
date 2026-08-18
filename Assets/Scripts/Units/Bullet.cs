@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using Core;
 using Core.Game;
 using Core.Game.Enums;
 using HealthSystem.Runtime.Components;
@@ -9,6 +10,11 @@ using VarelaAloisio.Core.Attributes;
 
 namespace Units
 {
+    /// <summary>
+    /// The classic implementation of a basic missile 
+    /// Author: Juan Pablo Varela Aloisio
+    /// email: juampyvarela@gmail.com
+    /// </summary>
     public class Bullet : MonoBehaviourAsync, IBullet
     {
         [Serializable]

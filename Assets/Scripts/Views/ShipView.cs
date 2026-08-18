@@ -16,7 +16,7 @@ namespace Views
 
         private void Update()
         {
-            bool isMoving = ship.Direction.magnitude > 0;
+            bool isMoving = ship.MoveDirection.magnitude > 0;
             foreach (ParticleSystem particle in thrusterParticles)
             {
                 if (isMoving)

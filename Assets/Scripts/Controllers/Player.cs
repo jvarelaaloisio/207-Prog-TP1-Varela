@@ -1,52 +1,89 @@
 using System.Threading;
 using Core.Game;
+using Core.Services;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VarelaAloisio.Core;
 using VarelaAloisio.Core.Utils;
 
 namespace Controllers
 {
     public class Player : ShipController
     {
-        [SerializeField] private InputActionReference moveAction;
-        [SerializeField] private InputActionReference shootAction;
+        [SerializeField] private InputActionReference moveInput;
+        [SerializeField] private InputActionReference shootInput;
+        [SerializeField] private InputActionReference controllerLookInput;
+        [SerializeField] private InputActionReference mouseLookInput;
+
         private CancellationTokenSource _shootSource;
 
         protected override void OnEnable()
         {
             base.OnEnable();
-            if (moveAction)
+            if (moveInput)
             {
-                moveAction.action.Enable();
-                moveAction.action.started += HandleMove;
-                moveAction.action.performed += HandleMove;
-                moveAction.action.canceled += HandleMove;
+                moveInput.action.Enable();
+                moveInput.action.started += HandleMove;
+                moveInput.action.performed += HandleMove;
+                moveInput.action.canceled += HandleMove;
             }
 
-            if (shootAction)
+            if (shootInput)
             {
-                shootAction.action.Enable();
-                shootAction.action.started += StartShooting;
-                shootAction.action.canceled += StopShooting;
+                shootInput.action.Enable();
+                shootInput.action.started += StartShooting;
+                shootInput.action.canceled += StopShooting;
+            }
+
+            if (controllerLookInput)
+            {
+                controllerLookInput.action.Enable();
+                controllerLookInput.action.started += HandleLookViaGamepad;
+                controllerLookInput.action.performed += HandleLookViaGamepad;
+                controllerLookInput.action.canceled += HandleLookViaGamepad;
+            }
+
+            if (mouseLookInput)
+            {
+                mouseLookInput.action.Enable();
+                mouseLookInput.action.started += HandleLookViaMouse;
+                mouseLookInput.action.performed += HandleLookViaMouse;
+                mouseLookInput.action.canceled += HandleLookViaMouse;
             }
         }
 
         protected override void OnDisable()
         {
             TokenUtils.CancelAndDispose(ref _shootSource);
-            if (moveAction)
+            if (moveInput)
             {
-                moveAction.action.Disable();
-                moveAction.action.started -= HandleMove;
-                moveAction.action.performed -= HandleMove;
-                moveAction.action.canceled -= HandleMove;
+                moveInput.action.Disable();
+                moveInput.action.started -= HandleMove;
+                moveInput.action.performed -= HandleMove;
+                moveInput.action.canceled -= HandleMove;
             }
 
-            if (shootAction)
+            if (shootInput)
             {
-                shootAction.action.Disable();
-                shootAction.action.started -= StartShooting;
-                shootAction.action.canceled -= StopShooting;
+                shootInput.action.Disable();
+                shootInput.action.started -= StartShooting;
+                shootInput.action.canceled -= StopShooting;
+            }
+
+            if (controllerLookInput)
+            {
+                controllerLookInput.action.Disable();
+                controllerLookInput.action.started -= HandleLookViaGamepad;
+                controllerLookInput.action.performed -= HandleLookViaGamepad;
+                controllerLookInput.action.canceled -= HandleLookViaGamepad;
+            }
+
+            if (mouseLookInput)
+            {
+                mouseLookInput.action.Disable();
+                mouseLookInput.action.started -= HandleLookViaMouse;
+                mouseLookInput.action.performed -= HandleLookViaMouse;
+                mouseLookInput.action.canceled -= HandleLookViaMouse;
             }
         }
 
@@ -61,10 +98,10 @@ namespace Controllers
         {
             if (Ship is null)
                 return;
-            Ship.Direction = input.ReadValue<Vector2>();
+            Ship.MoveDirection = input.ReadValue<Vector2>();
         }
 
-        private void StartShooting(InputAction.CallbackContext obj)
+        private void StartShooting(InputAction.CallbackContext _)
         {
             if (Ship is null)
                 return;
@@ -72,8 +109,24 @@ namespace Controllers
             Ship.ShootPrimaryPeriodically(_shootSource.Token);
         }
 
-        private void StopShooting(InputAction.CallbackContext obj)
+        private void StopShooting(InputAction.CallbackContext _)
             => TokenUtils.CancelAndDispose(ref _shootSource);
+
+        private void HandleLookViaGamepad(InputAction.CallbackContext input)
+        {
+            if (Ship is null)
+                return;
+            var inputDirection = input.ReadValue<Vector2>();
+            Ship.Direction = inputDirection;
+        }
+        private void HandleLookViaMouse(InputAction.CallbackContext input)
+        {
+            if (Ship is null)
+                return;
+            Vector2 shipPosition = Camera.main.WorldToScreenPoint(Ship.transform.position);
+            var inputDirection = input.ReadValue<Vector2>();
+            Ship.Direction = (inputDirection - shipPosition).normalized;
+        }
 
         private void DestroySelf(IShip _)
             => Destroy(gameObject);

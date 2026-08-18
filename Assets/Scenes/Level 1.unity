@@ -404,10 +404,10 @@ MonoBehaviour:
     <Controller>k__BackingField: {fileID: 7868370144565245329, guid: f097bc4d4e95ed348bf8e414b831089d, type: 3}
     <Health>k__BackingField: 3
     <Team>k__BackingField: 1
-    <Delay>k__BackingField: 1
+    <Delay>k__BackingField: 5
     <IsPeriodic>k__BackingField: 1
     <Period>k__BackingField: 3
-    <Quantity>k__BackingField: 1
+    <Quantity>k__BackingField: 6
     <PrimaryFireType>k__BackingField: 0
     <SecondaryFireType>k__BackingField: 0
 --- !u!4 &699923783

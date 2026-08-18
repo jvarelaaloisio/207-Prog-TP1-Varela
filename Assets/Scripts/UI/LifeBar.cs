@@ -1,4 +1,3 @@
-using System;
 using Core.Game;
 using Core.Game.Enums;
 using Core.Services;
@@ -12,6 +11,11 @@ using VarelaAloisio.Core;
 
 namespace UI
 {
+    /// <summary>
+    /// The visual representation for the players health points 
+    /// Author: Juan Pablo Varela Aloisio
+    /// email: juampyvarela@gmail.com
+    /// </summary>
     public class LifeBar : MonoBehaviour
     {
         [SerializeField] private Image graphic;
@@ -24,7 +28,7 @@ namespace UI
         {
             if (!Service.TryGet(out IUnitsRepository unitsRepository))
             {
-                Debug.LogError($"{name}: Units Repository not found. Deactivating");
+                Debug.LogError($"{name} <color=grey>({nameof(LifeBar)})</color>: Units Repository not found. Deactivating");
                 gameObject.SetActive(false);
                 return;
             }
@@ -53,6 +57,7 @@ namespace UI
 
         private async void HookToHealth(IShip ship)
         {
+            ship.OnKill += UnhookHealth;
             if (ship.gameObject.TryGetComponent(out IHealthComponent healthComponent))
             {
                 await Awaitable.NextFrameAsync();
@@ -62,11 +67,27 @@ namespace UI
                 HandleLifeChanged(_health.HP, _health.HP);
             }
             else
-                Debug.LogError($"{name}: Player ship doesn't have health.");
+                Debug.LogError($"{name} <color=grey>({nameof(LifeBar)})</color>: Player ship doesn't have health.");
+        }
+
+        private void UnhookHealth(IShip _)
+        {
+            _health = null;
+            
+            if (!Service.TryGet(out IUnitsRepository unitsRepository))
+            {
+                Debug.LogError($"{name} <color=grey>({nameof(LifeBar)})</color>: Units Repository not found. Deactivating");
+                gameObject.SetActive(false);
+                return;
+            }
+            unitsRepository.OnShipSpawned -= HandleShipSpawned;
+            unitsRepository.OnShipSpawned += HandleShipSpawned;
         }
 
         private void HandleLifeChanged(int before, int after)
         {
+            if (_health is null)
+                return;
             float healthLerp = (float)after / _health.MaxHP;
             LMotion.Create(graphic.fillAmount, healthLerp, barAnimationDuration)
                    .WithEase(Ease.InOutQuad)

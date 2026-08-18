@@ -7,8 +7,10 @@ namespace Core.Services
     {
         void EnterGame();
         ILevelManager CurrentLevel { get; }
+        int LivesLeft { get; }
         event Action<ILevelManager> OnPlayerWonLevel;
         event Action<ILevelManager> OnPlayerLost;
         event Action<ILevelManager> OnAllowRetry;
+        event Action OnGameEnded;
     }
 }

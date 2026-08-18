@@ -12,7 +12,10 @@ namespace Core.Game
         GameObject gameObject { get; }
         Transform transform { get; }
         Team Team { get; }
+        /// <summary/> The direction the ship is facing
         Vector2 Direction { get; set; }
+        /// <summary/> The direction the ship is moving towards
+        Vector2 MoveDirection { get; set; }
         float MaxSpeed { get; }
         void ShootPrimaryPeriodically(CancellationToken token, float periodOverride = -1f);
         void Inject(Factory<IBullet> primaryBulletFactory, Factory<IBullet> secondaryBulletFactory, Team team);

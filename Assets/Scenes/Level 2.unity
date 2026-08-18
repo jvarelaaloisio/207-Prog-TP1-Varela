@@ -380,7 +380,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86ea6bfcbae29d248890bf380ebe377f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  <Level>k__BackingField: 1
+  <Level>k__BackingField: 2
   spawns:
   - editorName: 'Player (PlayerController) '
     <Type>k__BackingField: 0
@@ -396,7 +396,7 @@ MonoBehaviour:
     <Quantity>k__BackingField: 1
     <PrimaryFireType>k__BackingField: 0
     <SecondaryFireType>k__BackingField: 1
-  - editorName: Enemy (PathAIController) (~3)
+  - editorName: Enemy (PathAIController) (~2)
     <Type>k__BackingField: 1
     <Pose>k__BackingField:
       position: {x: -6, y: 16, z: 0}
@@ -406,8 +406,8 @@ MonoBehaviour:
     <Team>k__BackingField: 1
     <Delay>k__BackingField: 5
     <IsPeriodic>k__BackingField: 1
-    <Period>k__BackingField: 3
-    <Quantity>k__BackingField: 10
+    <Period>k__BackingField: 2
+    <Quantity>k__BackingField: 12
     <PrimaryFireType>k__BackingField: 0
     <SecondaryFireType>k__BackingField: 0
 --- !u!4 &699923783

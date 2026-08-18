@@ -10,6 +10,12 @@ using VarelaAloisio.Core;
 
 namespace Units
 {
+    /// <summary>
+    /// This class is used to facilitate the actual implementations of interfaces.
+    /// It acts as a middleman between Unity's instantiation logic and allows for future performance optimizations, such as adding object pooling.
+    /// Author: Juan Pablo Varela Aloisio
+    /// email: juampyvarela@gmail.com
+    /// </summary>
     public class UnitsRepository : MonoBehaviour, IUnitsRepository
     {
         [SerializeField] private Ship shipPrefab;
@@ -19,8 +25,8 @@ namespace Units
         [SerializeField] private DeathRay deathRayPrefab;
         private Transform _shipsParent;
         private Transform _bulletsParent;
-        private readonly Dictionary<ShipType, List<IShip>> _ships = new();
-        private readonly Dictionary<BulletType, List<IBullet>> _bullets = new();
+        private readonly Dictionary<ShipType, List<IShip>> _shipsPerType = new();
+        private readonly Dictionary<BulletType, List<IBullet>> _bulletsPerType = new();
 
         private void Awake()
             => Service.Add<IUnitsRepository>(this);
@@ -57,7 +63,7 @@ namespace Units
         /// <inheritdoc />
         public bool TryGetShipsOfType(ShipType type, out IShip[] result)
         {
-            bool found = _ships.TryGetValue(type, out var ships);
+            bool found = _shipsPerType.TryGetValue(type, out var ships);
             result = new IShip[ships?.Count ?? 0];
             ships?.CopyTo(result);
             return found;
@@ -79,10 +85,10 @@ namespace Units
             Ship ship = Instantiate(prefab, _shipsParent);
             ship.name = $"Ship ({type})";
             ship.OnKill += RemoveShip;
-            if (_ships.TryGetValue(type, out var ships))
+            if (_shipsPerType.TryGetValue(type, out var ships))
                 ships.Add(ship);
             else
-                _ships.Add(type, new() { ship });
+                _shipsPerType.Add(type, new() { ship });
             OnShipSpawned?.Invoke(ship, team);
             return ship;
         }
@@ -90,12 +96,12 @@ namespace Units
         private void RemoveShip(IShip destroyedShip)
         {
             OnShipDestroyed?.Invoke(destroyedShip, destroyedShip.Team);
-            foreach ((ShipType type, var ships) in _ships)
+            foreach ((ShipType type, var ships) in _shipsPerType)
             {
                 IShip ship = ships.FirstOrDefault(ship => ReferenceEquals(ship, destroyedShip));
                 if (ship is null)
                     continue;
-                _ships[type].Remove(ship);
+                _shipsPerType[type].Remove(ship);
                 return;
             }
         }
@@ -121,10 +127,25 @@ namespace Units
         /// <inheritdoc />
         public bool TryGetBulletsOfType(BulletType type, out IBullet[] result)
         {
-            bool found = _bullets.TryGetValue(type, out var bullets);
+            bool found = _bulletsPerType.TryGetValue(type, out var bullets);
             result = new IBullet[bullets?.Count ?? 0];
             bullets?.CopyTo(result);
             return found;
+        }
+
+        /// <inheritdoc />
+        public void Flush()
+        {
+            foreach (var (_, ships) in _shipsPerType)
+                foreach (IShip ship in ships.Where(ship => ship is not null))
+                {
+                    ship.OnKill -= RemoveShip;
+                    ship.Kill();
+                }
+            _shipsPerType.Clear();
+            foreach (Transform child in _bulletsParent)
+                Destroy(child.gameObject);
+            _bulletsPerType.Clear();
         }
 
         //TODO: Use InstantiateAsync to instantiate multiple objects
@@ -132,10 +153,10 @@ namespace Units
         private IBullet SpawnBullet()
         {
             IBullet bullet = Instantiate(bulletPrefab, _bulletsParent);
-            if (_bullets.TryGetValue(BulletType.Missile, out var bullets))
+            if (_bulletsPerType.TryGetValue(BulletType.Missile, out var bullets))
                 bullets.Add(bullet);
             else
-                _bullets.Add(BulletType.Missile, new() { bullet });
+                _bulletsPerType.Add(BulletType.Missile, new() { bullet });
 
             return bullet;
         }
@@ -144,10 +165,10 @@ namespace Units
         {
             IBullet bullet = Instantiate(deathRayPrefab, _bulletsParent);
             
-            if (_bullets.TryGetValue(BulletType.DeathRay, out var bullets))
+            if (_bulletsPerType.TryGetValue(BulletType.DeathRay, out var bullets))
                 bullets.Add(bullet);
             else
-                _bullets.Add(BulletType.DeathRay, new() { bullet });
+                _bulletsPerType.Add(BulletType.DeathRay, new() { bullet });
             return bullet;
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Core;
 using Core.Game;
 using Core.Game.Enums;
 using Core.Utils;
@@ -10,6 +11,12 @@ using VarelaAloisio.Core.Attributes;
 
 namespace Units
 {
+    /// <summary>
+    /// This is the actual implementation for a ship.
+    /// This class contains everything needed to control the ships movement, but it's not meant to decide what to do, just how to do it.
+    /// Author: Juan Pablo Varela Aloisio
+    /// email: juampyvarela@gmail.com
+    /// </summary>
     public class Ship : MonoBehaviourAsync, IShip
     {
         [Serializable]
@@ -70,6 +77,7 @@ namespace Units
         public Team Team => team;
 
         [field: SerializeField, ReadOnly] public Vector2 Direction { get; set; }
+        [field: SerializeField, ReadOnly] public Vector2 MoveDirection { get; set; }
 
         private void Reset()
             => rigidBody = GetComponent<Rigidbody2D>()
@@ -80,6 +88,7 @@ namespace Units
             IsBreaking = false;
             IsDrifting = false;
             Direction = Vector2.zero;
+            MoveDirection = Vector2.zero;
         }
 
         public void Inject(Factory<IBullet> primaryBulletFactory, Factory<IBullet> secondaryBulletFactory, Team team)
@@ -100,7 +109,7 @@ namespace Units
         private void FixedUpdate()
         {
             if (!_isMovementBlocked)
-                Move(Direction);
+                Move(MoveDirection);
         }
 
         /// <inheritdoc />
@@ -124,7 +133,7 @@ namespace Units
             float period = periodOverride > 0 ? periodOverride : shootingPeriod;
             if (muzzles.Count < 1)
             {
-                Debug.LogError($"{nameof(muzzles)} is empty!");
+                Debug.LogError($"{name} <color=grey>({nameof(Ship)})</color>: {nameof(muzzles)} is empty!");
                 return;
             }
 
@@ -173,7 +182,7 @@ namespace Units
 
         private void RotateTowardsVelocity()
             => transform.up = Vector2.Lerp(transform.up,
-                                           rigidBody.linearVelocity.normalized,
+                                           Direction,
                                            rotationSpeed * Time.deltaTime);
 
         private void Move(Vector2 direction)

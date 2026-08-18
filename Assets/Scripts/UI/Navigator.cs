@@ -1,6 +1,7 @@
 using System;
 using Core;
 using Core.Game;
+using Core.Game.Enums;
 using Core.Services;
 using LitMotion;
 using LitMotion.Extensions;
@@ -9,6 +10,12 @@ using VarelaAloisio.Core;
 
 namespace UI
 {
+    /// <summary>
+    /// This class is used for anything UI related.
+    /// It listens to important events from the Game Manager and responds by manipulating the different menus
+    /// Author: Juan Pablo Varela Aloisio
+    /// email: juampyvarela@gmail.com
+    /// </summary>
     public class Navigator : MonoBehaviour
     {
         [SerializeField] private GameObject pointerUI;
@@ -22,16 +29,17 @@ namespace UI
         [SerializeField] private CustomButton creditsButton;
         [SerializeField] private CustomButton backButton;
         [SerializeField] private CustomButton exitButton;
+        [SerializeField] private CustomButton retryButton;
         [SerializeField] private Transform pointee;
         [SerializeField] private float pointerTransitionDuration = 0.15f;
         [SerializeField] private float delayAfterButtonPress = 1f;
 
-        private CustomButton[] _buttons;
+        private CustomButton[] _mainMenuButtons;
         private GameObject[] _exclusiveUIs;
 
         private void Awake()
         {
-            _buttons = new[] { playButton, creditsButton, exitButton, backButton };
+            _mainMenuButtons = new[] { playButton, creditsButton, exitButton };
             _exclusiveUIs = new []{ menuUI, gameplayUI, creditsUI, retryUI, youLoseUI, youWinUI };
         }
 
@@ -46,25 +54,29 @@ namespace UI
             if (creditsButton)
             {
                 creditsButton.RequestPointer = HandlePointerRequest;
-                creditsButton.onClick.AddListener(HandleCreditsClicked);
+                creditsButton.onClick.AddListener(ShowCreditsMenu);
             }
 
             if (exitButton)
             {
                 exitButton.RequestPointer = HandlePointerRequest;
-                exitButton.onClick.AddListener(HandleExitClicked);
+                exitButton.onClick.AddListener(Exit);
             }
 
             if (backButton)
             {
                 backButton.RequestPointer = HandlePointerRequest;
-                backButton.onClick.AddListener(HandleBackClicked);
+                backButton.onClick.AddListener(ShowMainMenu);
             }
+
+            if (retryButton)
+                retryButton.onClick.AddListener(HandleRetryClicked);
             if (Service.TryGet(out IGameManager gameManager))
             {
                 gameManager.OnAllowRetry += ShowRetryMenu;
-                gameManager.OnPlayerLost += ShowYouLoseMenu;
-                gameManager.OnPlayerWonLevel += HandleLevelComplete;
+                gameManager.OnPlayerLost += ShowDefeatMenu;
+                gameManager.OnPlayerWonLevel += ShowVictoryMenu;
+                gameManager.OnGameEnded += ShowMainMenu;
             }
         }
 
@@ -78,15 +90,21 @@ namespace UI
 
         private void OnDisable()
         {
-            playButton.onClick.RemoveListener(HandlePlayClicked);
-            creditsButton.onClick.RemoveListener(HandleCreditsClicked);
-            exitButton.onClick.RemoveListener(HandleExitClicked);
+            if (playButton)
+                playButton.onClick.RemoveListener(HandlePlayClicked);
+            if (creditsButton)
+                creditsButton.onClick.RemoveListener(ShowCreditsMenu);
+            if (exitButton)
+                exitButton.onClick.RemoveListener(Exit);
+            if (retryButton)
+                retryButton.onClick.AddListener(HandleRetryClicked);
             
             if (Service.TryGet(out IGameManager gameManager))
             {
                 gameManager.OnAllowRetry -= ShowRetryMenu;
-                gameManager.OnPlayerLost -= ShowYouLoseMenu;
-                gameManager.OnPlayerWonLevel -= HandleLevelComplete;
+                gameManager.OnPlayerLost -= ShowDefeatMenu;
+                gameManager.OnPlayerWonLevel -= ShowVictoryMenu;
+                gameManager.OnGameEnded -= ShowMainMenu;
             }
         }
 
@@ -99,12 +117,12 @@ namespace UI
 
         private async void HandlePlayClicked()
         {
-            foreach (CustomButton customButton in _buttons)
+            foreach (CustomButton customButton in _mainMenuButtons)
                 customButton.interactable = false;
             await Awaitable.WaitForSecondsAsync(delayAfterButtonPress);
             if (!Service.TryGet(out IGameManager gameManager))
             {
-                Debug.LogError($"{name}: Game manager not found");
+                Debug.LogError($"{name} <color=grey>({nameof(Navigator)})</color>: Game manager not found.");
                 return;
             }
             gameManager.EnterGame();
@@ -112,15 +130,21 @@ namespace UI
             GoToUI(gameplayUI);
         }
 
-        private void HandleCreditsClicked()
+        private void HandleRetryClicked()
         {
-            GoToUI(creditsUI);
-            backButton.interactable = true;
+            if (!Service.TryGet(out IGameManager gameManager))
+            {
+                Debug.LogError($"{name} <color=grey>({nameof(Navigator)})</color>: Game Manager not found");
+                return;
+            }
+
+            gameManager.CurrentLevel.RespawnTeam(Team.Player);
+            GoToUI(gameplayUI);
         }
 
-        private async void HandleExitClicked()
+        private async void Exit()
         {
-            foreach (CustomButton customButton in _buttons)
+            foreach (CustomButton customButton in _mainMenuButtons)
                 customButton.interactable = false;
             await Awaitable.WaitForSecondsAsync(delayAfterButtonPress);
             Application.Quit();
@@ -129,21 +153,28 @@ namespace UI
 #endif
         }
 
-        private void HandleBackClicked()
-            => GoToUI(menuUI);
+        private void ShowCreditsMenu()
+            => GoToUI(creditsUI);
+
+        private void ShowMainMenu()
+        {
+            foreach (CustomButton customButton in _mainMenuButtons)
+                customButton.interactable = true;
+            pointerUI?.SetActive(true);
+            GoToUI(menuUI);
+        }
 
         private void ShowRetryMenu(ILevelManager levelManager)
             => GoToUI(retryUI);
 
-        private void ShowYouLoseMenu(ILevelManager levelManager)
+        private void ShowDefeatMenu(ILevelManager levelManager)
             => GoToUI(youLoseUI);
 
-        private void HandleLevelComplete(ILevelManager levelManager)
+        private void ShowVictoryMenu(ILevelManager levelManager)
         {
-            if (levelManager.Level != 2)
+            if (levelManager.Level < 2)
                 return;
-            pointerUI?.SetActive(true);
-            GoToUI(menuUI);
+            GoToUI(youWinUI);
         }
 
         private void GoToUI(GameObject activeUI)

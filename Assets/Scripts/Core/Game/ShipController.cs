@@ -1,8 +1,13 @@
-﻿using Units;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Core.Game
 {
+    /// <summary>
+    /// This is a base class for all ship controllers.
+    /// It's meant to be hooked 1-1 with a ship and thus, decide what said ship should do. 
+    /// Author: Juan Pablo Varela Aloisio
+    /// email: juampyvarela@gmail.com
+    /// </summary>
     public abstract class ShipController : MonoBehaviourAsync
     {
         protected IShip Ship;
@@ -13,7 +18,7 @@ namespace Core.Game
             if (ship is not null)
                 return;
 
-            Debug.LogError($"Controller ({name}) was injected with null. <color=red>Deactivating GameObject</color>", this);
+            Debug.LogError($"{name} <color=grey>({nameof(ShipController)})</color>: I was injected with null. <color=red>Deactivating GameObject</color>", this);
             gameObject.SetActive(false);
         }
     }

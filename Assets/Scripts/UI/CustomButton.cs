@@ -5,6 +5,11 @@ using UnityEngine.UI;
 
 namespace UI
 {
+    /// <summary>
+    /// Intermediary class to allow for this object to be pointed at. 
+    /// Author: Juan Pablo Varela Aloisio
+    /// email: juampyvarela@gmail.com
+    /// </summary>
     public class CustomButton : Button
     {
         public Action<Transform> RequestPointer;
@@ -17,7 +22,7 @@ namespace UI
         public override void OnPointerEnter(PointerEventData eventData)
         {
             base.OnPointerEnter(eventData);
-            RequestPointer(transform);
+            RequestPointer?.Invoke(transform);
         }
     }
 }

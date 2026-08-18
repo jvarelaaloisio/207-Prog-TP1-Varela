@@ -2,17 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Core;
 using Core.Game;
 using Core.Game.Enums;
 using Core.Services;
 using Core.Utils;
 using HealthSystem.Runtime.Components;
-using Units;
 using UnityEngine;
 using VarelaAloisio.Core;
 
 namespace Management
 {
+    /// <summary>
+    /// This class acts as a level orchestrator.
+    /// It contains a set of spawn configurations to be run when the object is instantiated and has a set of functions and events for outside usage.
+    /// Author: Juan Pablo Varela Aloisio
+    /// email: juampyvarela@gmail.com
+    /// </summary>
     public class LevelManager : MonoBehaviourAsync, ILevelManager
     {
         [Serializable]
@@ -58,46 +64,69 @@ namespace Management
         /// <inheritdoc />
         public event Action<Team> OnTeamDefeated;
 
+        public void RespawnTeam(Team team)
+        {
+            var configurations = spawns.Where(spawn => spawn.Team == team);
+            if (!configurations.Any())
+            {
+                Debug.LogError($"{name} <color=grey>({nameof(LevelManager)})</color>: No spawn configurations found for team {team}.");
+                return;
+            }
+            
+            if (!Service.TryGet(out IUnitsRepository unitsRepository))
+            {
+                Debug.LogError($"{name} <color=grey>({nameof(LevelManager)})</color>: {nameof(IUnitsRepository)} not found.",this);
+                return;
+            }
+            foreach (SpawnConfiguration configuration in configurations)
+            {
+                Spawn(unitsRepository, configuration);
+            }
+        }
+
         private void Start()
         {
             if (!Service.TryGet(out IUnitsRepository unitsRepository))
             {
-                Debug.LogError($"{name} <color=grey>({nameof(LevelManager)})</color>: {nameof(IUnitsRepository)} not found.",
-                               this);
+                Debug.LogError($"{name} <color=grey>({nameof(LevelManager)})</color>: {nameof(IUnitsRepository)} not found.", this);
                 return;
             }
 
             unitsRepository.OnShipDestroyed += HandleShipDestroyed;
             foreach (SpawnConfiguration configuration in spawns)
                 Spawn(unitsRepository, configuration);
+        }
 
-            return;
+        private void OnDestroy()
+        {
+            if (Service.TryGet(out IUnitsRepository unitsRepository))
+                unitsRepository.OnShipDestroyed -= HandleShipDestroyed;
+        }
 
-            async void Spawn(IUnitsRepository service, SpawnConfiguration configuration)
-            {
-                if (configuration.Delay > 0)
-                    await Awaitable.WaitForSecondsAsync(configuration.Delay);
-                if (disableCancellationToken.IsCancellationRequested)
-                    return;
+        private async void Spawn(IUnitsRepository service, SpawnConfiguration configuration)
+        {
+            if (configuration.Delay > 0)
+                await Awaitable.WaitForSecondsAsync(configuration.Delay);
+            if (disableCancellationToken.IsCancellationRequested)
+                return;
 
-                var shipFactory = service.GetShipFactory(configuration.Type);
-                var primaryFireFactory = service.GetBulletFactory(configuration.PrimaryFireType);
-                var secondaryFireFactory = service.GetBulletFactory(configuration.SecondaryFireType);
-                if (configuration.IsPeriodic)
-                    DoSpawnPeriodically(shipFactory,
-                                        primaryFireFactory,
-                                        secondaryFireFactory,
-                                        configuration,
-                                        disableCancellationToken);
-                else
-                    SpawnShip(shipFactory,
-                              configuration.Pose,
-                              primaryFireFactory,
-                              secondaryFireFactory,
-                              configuration.Team,
-                              configuration.Controller,
-                              configuration.Health);
-            }
+            var shipFactory = service.GetShipFactory(configuration.Type);
+            var primaryFireFactory = service.GetBulletFactory(configuration.PrimaryFireType);
+            var secondaryFireFactory = service.GetBulletFactory(configuration.SecondaryFireType);
+            if (configuration.IsPeriodic)
+                DoSpawnPeriodically(shipFactory,
+                                    primaryFireFactory,
+                                    secondaryFireFactory,
+                                    configuration,
+                                    disableCancellationToken);
+            else
+                SpawnShip(shipFactory,
+                          configuration.Pose,
+                          primaryFireFactory,
+                          secondaryFireFactory,
+                          configuration.Team,
+                          configuration.Controller,
+                          configuration.Health);
         }
 
         private void HandleShipDestroyed(IShip ship, Team team)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -24,29 +25,25 @@ namespace Controllers
                 path.enabled = false;
         }
 
-        private async void Start()
+        private void Start()
         {
             if (!Service.TryGet(out IUnitsRepository unitsRepository))
             {
-                Debug.LogError($"Units repository not found");
+                Debug.LogError($"{name} <color=grey>({nameof(PathAI)})</color>: Units repository not found");
                 return;
             }
 
-            IShip[] ships = null;
-            while (!disableCancellationToken.IsCancellationRequested
-                   && !unitsRepository.TryGetShipsOfType(ShipType.Player, out ships))
-                await Awaitable.NextFrameAsync();
-            if (disableCancellationToken.IsCancellationRequested)
-                return;
-
-            _playerShip = ships.FirstOrDefault();
-            if (_playerShip is not null)
+            if (unitsRepository.TryGetShipsOfType(ShipType.Player, out var ships)
+                && ships.Length > 0)
+            {
+                _playerShip = ships[0];
                 _playerShip.OnKill += HandlePlayerDied;
+            }
             else
             {
-                Debug.LogError($"Player ship not found");
+                unitsRepository.OnShipSpawned += HandleShipSpawned;
+                Debug.Log($"{name} <color=grey>({nameof(PathAI)})</color>: Player ship not found.");
                 _hasPlayerDied = true;
-                gameObject.SetActive(false);
             }
         }
 
@@ -67,6 +64,18 @@ namespace Controllers
             if (Ship is null || !Ship.transform || _hasPlayerDied)
                 return;
             Ship.transform.up = ((_playerShip?.transform?.position ?? Vector3.zero) - Ship.transform.position).normalized;
+        }
+
+        private void HandleShipSpawned(IShip ship, Team team)
+        {
+            if (team is Team.Player)
+            {
+                if (Service.TryGet(out IUnitsRepository unitsRepository))
+                    unitsRepository.OnShipSpawned -= HandleShipSpawned;
+                _playerShip = ship;
+                _playerShip.OnKill += HandlePlayerDied;
+                _hasPlayerDied = false;
+            }
         }
 
         private async void FollowPath(CancellationToken token)
@@ -115,6 +124,23 @@ namespace Controllers
             => Destroy(gameObject);
 
         private void HandlePlayerDied(IShip obj)
-            => _hasPlayerDied = true;
+        {
+            _hasPlayerDied = true;
+            if (!Service.TryGet(out IUnitsRepository unitsRepository))
+            {
+                Debug.LogError($"{name} <color=grey>({nameof(PathAI)})</color>: Units repository not found");
+                return;
+            }
+
+            unitsRepository.OnShipSpawned += HandleShipSpawned;
+        }
+
+        private void OnDestroy()
+        {
+            if (Ship is not null)
+            {
+                Ship.OnKill -= DestroySelf;
+            }
+        }
     }
 }

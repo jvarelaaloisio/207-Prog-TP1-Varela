@@ -19,5 +19,7 @@ namespace Core.Services
         bool TryGetShipsOfType(ShipType type, out IShip[] result);
         /// <summary /> Try to get the currently spawned bullets with the given type
         bool TryGetBulletsOfType(BulletType type, out IBullet[] result);
+        /// <summary /> Kill all units
+        void Flush();
     }
 }

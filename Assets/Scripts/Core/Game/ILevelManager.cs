@@ -11,5 +11,7 @@ namespace Core.Game
 
         /// <summary /> Event triggered when all ships of a team are destroyed.
         event Action<Team> OnTeamDefeated;
+
+        void RespawnTeam(Team player);
     }
 }
