@@ -16,7 +16,7 @@ namespace Management
     /// Author: Juan Pablo Varela Aloisio
     /// email: juampyvarela@gmail.com
     /// </summary>
-    public class GameManager : MonoBehaviourAsync, IGameManager
+    public class GameManager : MacacoBehaviour, IGameManager
     {
         [SerializeField] private string uiName;
         [SerializeField] private string level1Name;
@@ -35,14 +35,24 @@ namespace Management
 
         public ILevelManager CurrentLevel => _currentLevel;
         public int LivesLeft { get; private set; }
-        private void Awake()
-            => Service.Add<IGameManager>(this);
 
-        private void OnDestroy()
-            => Service.Remove<IGameManager>();
+        protected override void Awake()
+        {
+            base.Awake();
+            Service.Add<IGameManager>(this);
+        }
 
-        private void Start()
-            => SceneManager.LoadSceneAsync(uiName, LoadSceneMode.Additive);
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            Service.Remove<IGameManager>();
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            SceneManager.LoadSceneAsync(uiName, LoadSceneMode.Additive);
+        }
 
         public void EnterGame()
         {
@@ -82,7 +92,7 @@ namespace Management
                     if (SceneManager.GetSceneByName(level2Name).isLoaded)
                         await SceneManager.UnloadSceneAsync(level2Name);
                     await Awaitable.WaitForSecondsAsync(delayBeforeEndingGame);
-                    if (disableCancellationToken.IsCancellationRequested)
+                    if (DisableCancellationToken.IsCancellationRequested)
                         return;
                     unitsRepository?.Flush();
                     OnGameEnded?.Invoke();

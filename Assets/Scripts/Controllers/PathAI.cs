@@ -19,14 +19,16 @@ namespace Controllers
         private IShip _playerShip;
         private bool _hasPlayerDied = false;
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             if (path)
                 path.enabled = false;
         }
 
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             if (!Service.TryGet(out IUnitsRepository unitsRepository))
             {
                 Debug.LogError($"{name} <color=grey>({nameof(PathAI)})</color>: Units repository not found");
@@ -53,10 +55,10 @@ namespace Controllers
             if (ship is null)
                 return;
             ship.OnKill += DestroySelf;
-            Ship.OverrideMovement(name, disableCancellationToken);
-            Ship.OverrideRotation(name, disableCancellationToken);
-            FollowPath(disableCancellationToken);
-            ShootAfter(shootingDelay, disableCancellationToken);
+            Ship.OverrideMovement(name, DisableCancellationToken);
+            Ship.OverrideRotation(name, DisableCancellationToken);
+            FollowPath(DisableCancellationToken);
+            ShootAfter(shootingDelay, DisableCancellationToken);
         }
 
         private void Update()
@@ -135,8 +137,9 @@ namespace Controllers
             unitsRepository.OnShipSpawned += HandleShipSpawned;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             if (Ship is not null)
             {
                 Ship.OnKill -= DestroySelf;

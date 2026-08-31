@@ -6,6 +6,7 @@ using Core.Game;
 using Core.Game.Enums;
 using HealthSystem.Runtime.Components;
 using UnityEngine;
+using VarelaAloisio.Core;
 using VarelaAloisio.Core.Attributes;
 
 namespace Units
@@ -15,7 +16,7 @@ namespace Units
     /// Author: Juan Pablo Varela Aloisio
     /// email: juampyvarela@gmail.com
     /// </summary>
-    public class Bullet : MonoBehaviourAsync, IBullet
+    public class Bullet : MacacoBehaviour, IBullet
     {
         [Serializable]
         private class TeamConfiguration
@@ -34,8 +35,11 @@ namespace Units
         [SerializeField, ReadOnly, Tooltip("Injected")] private int damage;
         private float _movementStartTime;
 
-        private void Awake()
-            => trail ??= GetComponentInChildren<TrailRenderer>();
+        protected override void Awake()
+        {
+            base.Awake();
+            trail ??= GetComponentInChildren<TrailRenderer>();
+        }
 
         /// <inheritdoc />
         public void Inject(int damage, Team team)
@@ -51,7 +55,7 @@ namespace Units
 
         public void Shoot()
         {
-            DoUpdate(disableCancellationToken);
+            DoUpdate(DisableCancellationToken);
             _movementStartTime = Time.time;
             Destroy(gameObject, lifetime);
         }

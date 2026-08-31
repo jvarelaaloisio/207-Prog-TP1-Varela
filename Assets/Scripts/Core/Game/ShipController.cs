@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using VarelaAloisio.Core;
 
 namespace Core.Game
 {
@@ -8,7 +9,7 @@ namespace Core.Game
     /// Author: Juan Pablo Varela Aloisio
     /// email: juampyvarela@gmail.com
     /// </summary>
-    public abstract class ShipController : MonoBehaviourAsync
+    public abstract class ShipController : MacacoBehaviour
     {
         protected IShip Ship;
 

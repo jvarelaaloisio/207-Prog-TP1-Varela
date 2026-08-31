@@ -2,6 +2,7 @@
     "name": "VarelaAloisio.Ships.UI.Runtime",
     "rootNamespace": "",
     "references": [
+        "GUID:48e0a263f230421488517ccf8a70b634",
         "GUID:6d4ce2d10ca598142b351f820ba9fb88",
         "GUID:3b570a5146f9d4f0fa107ed4559471a3",
         "GUID:3aa1866a824b5472da50fe142777d95f",

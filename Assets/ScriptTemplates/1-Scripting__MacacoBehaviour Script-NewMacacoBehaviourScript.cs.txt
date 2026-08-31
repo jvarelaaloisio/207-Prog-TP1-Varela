@@ -1,0 +1,7 @@
+using VarelaAloisio.Core;
+
+    #ROOTNAMESPACEBEGIN#
+public class #SCRIPTNAME# : MacacoBehaviour
+{
+}
+#ROOTNAMESPACEEND#

@@ -33,14 +33,14 @@ namespace Units
         [SerializeField] private AnimationCurve speedCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
 
         [Space]
-        [Range(0f, 10f)]
+        [UnityEngine.Range(0f, 10f)]
         [SerializeField] private float brakeForceMultiplier = .8f;
 
         [Space]
         [SerializeField] private float rotationSpeed = 10;
 
         [Header("Drifting")]
-        [Range(1f, 10f)]
+        [UnityEngine.Range(1f, 10f)]
         [SerializeField] private float driftForceMultiplier = 2;
         [SerializeField] private float minAngleToConsiderAsDrift = 45f;
 

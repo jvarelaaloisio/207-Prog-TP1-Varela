@@ -2,6 +2,7 @@
 using Core.Game;
 using Core.Game.Enums;
 using UnityEngine;
+using VarelaAloisio.Core;
 
 namespace Units
 {
@@ -12,7 +13,7 @@ namespace Units
     /// Author: Juan Pablo Varela Aloisio
     /// email: juampyvarela@gmail.com
     /// </summary>
-    public class DeathRay : MonoBehaviourAsync, IBullet
+    public class DeathRay : MacacoBehaviour, IBullet
     {
         private int _damage;
 
