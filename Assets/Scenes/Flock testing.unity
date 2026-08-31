@@ -472,7 +472,9 @@ MonoBehaviour:
   controller:
     reference: {fileID: 1052902291}
   mesh: {fileID: 1269116562925425082, guid: f075e254465ab4f4ca310cbec3ed905b, type: 3}
+  destinationMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: 8f9ee6e42e2005942a5b092cb9f2087c, type: 2}
+  destinationMaterial: {fileID: 2100000, guid: 12046c518344e6948b805123b9163c86, type: 2}
   unitSize: 0.05
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

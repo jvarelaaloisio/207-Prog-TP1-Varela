@@ -1,0 +1,17 @@
+{
+    "name": "VarelaAloisio.Ships.Steering.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:48e0a263f230421488517ccf8a70b634",
+        "GUID:6d4ce2d10ca598142b351f820ba9fb88"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

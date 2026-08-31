@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Core.Game;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Core.Steering
@@ -7,6 +8,6 @@ namespace Core.Steering
     public interface IFlockController
     {
         List<Boid> Flock { get; }
-        Vector3 Destination { get; }
+        float3 Destination { get; }
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Game;
 using Core.Steering;
+using Unity.Mathematics;
 using UnityEngine;
 using VarelaAloisio.Core;
 
@@ -28,7 +29,7 @@ namespace Views
             {
                 Graphics.RenderMeshInstanced(new RenderParams(material), mesh, 0,
                                              flock.Select(boid => Matrix4x4.TRS(boid.Position,
-                                                                                Quaternion.LookRotation(boid.Velocity.normalized, Vector3.back),
+                                                                                Quaternion.LookRotation(math.normalize(boid.Velocity), Vector3.back),
                                                                                 Vector3.one * unitSize))
                                                   .ToArray());
             }

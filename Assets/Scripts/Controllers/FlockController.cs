@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Core.Game;
 using Core.Steering;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VarelaAloisio.Core;
@@ -43,7 +44,7 @@ namespace Controllers
         [SerializeField] private float speed = 1;
         [SerializeField] private float spawnPeriod = .1f;
         private Flocking _flocking;
-        public Vector3 Destination { get; private set; } = Vector3.right * 3;
+        public float3 Destination { get; private set; } = float3.zero;
         public List<Boid> Flock { get; private set; } = new();
 
         protected override void Awake()
@@ -102,20 +103,16 @@ namespace Controllers
             for (int i = 0; i < Flock.Count; i++)
             {
                 Boid subject = Flock[i];
-                Vector3 separationDirection = _flocking.ComputeSeparation(Flock, i, separation.RangeSqr) * separation.Weight;
-                DrawRay(subject.Position, separationDirection, new Color(0.5450981f, 0f, 0f, separationDirection.magnitude / 25));
-                Vector3 alignmentDirection = _flocking.ComputeAlignment(Flock, i, alignment.RangeSqr) * alignment.Weight;
-                DrawRay(subject.Position, alignmentDirection, new Color(0f, 0.3921569f, 0f, alignmentDirection.magnitude / 5));
-                Vector3 cohesionDirection = _flocking.ComputeCohesion(Flock, i, cohesion.RangeSqr) * cohesion.Weight;
-                DrawRay(subject.Position, cohesionDirection, new Color(0f, 0f, 0.5450981f, cohesionDirection.magnitude / 5));
-                Vector3 destinationDirection = (Destination - subject.Position).normalized * destinationWeight;
-                DrawRay(subject.Position, destinationDirection, new Color(0, 0, 0, destinationDirection.magnitude / 5));
-                Vector3 direction = separationDirection
+                float3 separationDirection = _flocking.ComputeSeparation(Flock, i, separation.RangeSqr) * separation.Weight;
+                float3 alignmentDirection = _flocking.ComputeAlignment(Flock, i, alignment.RangeSqr) * alignment.Weight;
+                float3 cohesionDirection = _flocking.ComputeCohesion(Flock, i, cohesion.RangeSqr) * cohesion.Weight;
+                float3 destinationDirection = math.normalize(Destination - subject.Position) * destinationWeight;
+                float3 direction = separationDirection
                                    + alignmentDirection
                                    + cohesionDirection
                                    + destinationDirection;
                 direction.z = 0;
-                subject.Velocity = Vector3.RotateTowards(subject.Velocity, direction.normalized * speed, steeringSpeed * Time.deltaTime, 1.0f);
+                subject.Velocity = Vector3.RotateTowards(subject.Velocity, math.normalize(direction) * speed, steeringSpeed * Time.deltaTime, 1.0f);
                 subject.Position += subject.Velocity * Time.deltaTime;
                 Flock[i] = subject;
             }
