@@ -42,8 +42,15 @@ namespace Controllers
         [SerializeField] private float destinationWeight = 1f;
         [SerializeField] private float steeringSpeed = 2;
         [SerializeField] private float speed = 1;
+
+        [Header("Spawning")]
+        [SerializeField] private bool doSpawnPerFrame = true;
+        [SerializeField] private int spawnsPerFrame = 10;
+        [Tooltip("Only used if spawnPerFrame is false")]
         [SerializeField] private float spawnPeriod = .1f;
+
         private Flocking _flocking;
+
         public float3 Destination { get; private set; } = float3.zero;
         public List<Boid> Flock { get; private set; } = new();
 
@@ -83,11 +90,25 @@ namespace Controllers
             {
                 if (token.IsCancellationRequested)
                     return;
+                if (doSpawnPerFrame)
+                {
+                    for (int j = 0; i < flockCount && j < spawnsPerFrame; i++, j++)
+                        Spawn();
+                    await Awaitable.NextFrameAsync();
+                }
+                else
+                {
+                    Spawn();
+                    await Awaitable.WaitForSecondsAsync(spawnPeriod);
+                }
+            }
+
+            void Spawn()
+            {
                 Flock.Add(new Boid {
-                                        Position = position,
-                                        Velocity = Vector3.right * speed
-                                    });
-                await Awaitable.WaitForSecondsAsync(spawnPeriod);
+                                       Position = position,
+                                       Velocity = Vector3.right * speed
+                                   });
             }
         }
 
