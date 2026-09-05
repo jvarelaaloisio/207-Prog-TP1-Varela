@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using Core.Game;
+﻿using Core.Steering;
+using Unity.Collections;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace Controllers
 {
@@ -12,17 +11,15 @@ namespace Controllers
         /// <param name="flock">All other boids in the flock</param>
         /// <param name="subjectIndex">The index for the boid being controlled</param>
         /// <param name="rangeSqr">The maximum distance (squared) around the subject for neighbours to affect them.</param>
-        public float3 ComputeSeparation(IList<Boid> flock, int subjectIndex, float rangeSqr)
+        public float3 ComputeSeparation(NativeList<Boid> flock, Boid subject, float rangeSqr)
         {
             float3 separation = float3.zero;
             int inRangeCount = 0;
 
-            Boid subject = flock[subjectIndex];
-            for (int i = 0; i < flock.Count; i++)
+            foreach (Boid boid in flock)
             {
-                if (i == subjectIndex)
+                if (subject.Id == boid.Id)
                     continue;
-                Boid boid = flock[i];
                 float3 subjectToNeighbour = boid.Position - subject.Position;
                 float sqrDistance = math.lengthsq(subjectToNeighbour);
 
@@ -42,17 +39,15 @@ namespace Controllers
         /// <param name="flock">All other boids in the flock</param>
         /// <param name="subjectIndex">The index for the boid being controlled</param>
         /// <param name="rangeSqr">The maximum distance (squared) around the subject for neighbours to affect them.</param>
-        public float3 ComputeAlignment(IList<Boid> flock, int subjectIndex, float rangeSqr)
+        public float3 ComputeAlignment(NativeList<Boid> flock, Boid subject, float rangeSqr)
         {
             float3 velocity = float3.zero;
             int inRangeCount = 0;
 
-            Boid subject = flock[subjectIndex];
-            for (int i = 0; i < flock.Count; i++)
+            foreach (Boid neighbour in flock)
             {
-                if (i == subjectIndex)
+                if (subject.Id == neighbour.Id)
                     continue;
-                Boid neighbour = flock[i];
                 float3 subjectToNeighbour = neighbour.Position - subject.Position;
                 float sqrDistance = math.lengthsq(subjectToNeighbour);
 
@@ -73,17 +68,15 @@ namespace Controllers
         /// <param name="subjectIndex">The index for the boid being controlled</param>
         /// <param name="rangeSqr">The maximum distance (squared) around the subject for neighbours to affect them.</param>
         /// <returns></returns>
-        public float3 ComputeCohesion(IList<Boid> flock, int subjectIndex, float rangeSqr)
+        public float3 ComputeCohesion(NativeList<Boid> flock, Boid subject, float rangeSqr)
         {
             float3 center = float3.zero;
             int inRangeCount = 0;
 
-            Boid subject = flock[subjectIndex];
-            for (int i = 0; i < flock.Count; i++)
+            foreach (Boid neighbour in flock)
             {
-                if (i == subjectIndex)
+                if (subject.Id == neighbour.Id)
                     continue;
-                Boid neighbour = flock[i];
                 float3 subjectToNeighbour = neighbour.Position - subject.Position;
 
                 if (math.lengthsq(subjectToNeighbour) > rangeSqr || math.lengthsq(subjectToNeighbour) < .5f)

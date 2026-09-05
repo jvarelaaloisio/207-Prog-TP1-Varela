@@ -2,7 +2,8 @@
     "name": "VarelaAloisio.Ships.Core.Runtime",
     "rootNamespace": "",
     "references": [
-        "GUID:48e0a263f230421488517ccf8a70b634"
+        "GUID:48e0a263f230421488517ccf8a70b634",
+        "GUID:e0cd26848372d4e5c891c569017e11f1"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

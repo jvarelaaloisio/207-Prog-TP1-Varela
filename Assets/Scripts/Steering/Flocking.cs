@@ -1,8 +1,11 @@
+using System;
 using Core.Game;
+using Core.Steering;
 using Unity.Mathematics;
 
 namespace Steering
 {
+    [Obsolete("This is not obsolete per-se, it's mainly unfinished and unimplemented right now. The idea is/was for this to be a one-iteration version of the flocking algorithm")]
     public class Flocking
     {
         /// <summary /> Calculates a vector to separate the subject from its neighbours so they don't collide.
