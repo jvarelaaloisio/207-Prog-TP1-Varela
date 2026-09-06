@@ -4,7 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Core.Collections;
 using Core.Steering;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -59,23 +61,20 @@ namespace Controllers
         [SerializeField] private float gridMax;
 
         private Flocking _flocking;
-        private SpatialHash<Boid> _flockGrid;
+        private NativeSpatialHash<Boid> _flockGrid;
 
         public float3 Destination { get; private set; } = float3.zero;
-        public List<Boid> Flock { get; private set; } = new();
+        private NativeList<Boid> _flock;
 
-        private void OnValidate()
-        {
-            _flockGrid?.Dispose();
-            _flockGrid = new SpatialHash<Boid>(cellSize, flockCount);
-        }
+        public NativeList<Boid> Flock => _flock;
 
         protected override void Awake()
         {
             base.Awake();
             _flocking = new Flocking();
-            _flockGrid?.Dispose();
-            _flockGrid = new SpatialHash<Boid>(cellSize, flockCount);
+            if (_flockGrid.IsCreated)
+                _flockGrid.Dispose();
+            _flockGrid = new NativeSpatialHash<Boid>(cellSize, flockCount, Allocator.Persistent);
         }
 
         protected override void OnEnable()
@@ -86,7 +85,9 @@ namespace Controllers
                 clickInput.action.Enable();
                 clickInput.action.performed += HandleClick;
             }
-            Flock = new List<Boid>(flockCount);
+            if (_flock.IsCreated)
+                _flock.Dispose();
+            _flock = new NativeList<Boid>(flockCount, Allocator.Persistent);
             _ = SpawnFlock(DisableCancellationToken);
         }
 
@@ -103,7 +104,10 @@ namespace Controllers
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            _flockGrid?.Dispose();
+            if (_flockGrid.IsCreated)
+                _flockGrid.Dispose();
+            if (_flock.IsCreated)
+                _flock.Dispose();
         }
 
         private async Task SpawnFlock(CancellationToken token)
@@ -147,8 +151,9 @@ namespace Controllers
         private void Update()
         {
             _flockGrid.Clear();
-            foreach (Boid boid in Flock)
-                _flockGrid.Add(boid, boid.Position.xy);
+            var spatialHashJob = _flockGrid.GetCompute(Flock.AsArray());
+            JobHandle computeSpatialHash = spatialHashJob.ScheduleByRef(Flock.Length, 64);
+            computeSpatialHash.Complete();
             for (int i = 0; i < Flock.Count; i++)
             {
                 Boid subject = Flock[i];
@@ -166,9 +171,11 @@ namespace Controllers
                     foreach (Boid neighbour in neighbours)
                         DrawLine(subject.Position, neighbour.Position, Color.darkGreen);
                 direction.z = 0;
-                subject.Velocity = Vector3.RotateTowards(subject.Velocity, math.normalize(direction) * speed, steeringSpeed * Time.deltaTime, 1.0f);
+                Vector3 velocity = Vector3.RotateTowards(math.normalize(subject.Velocity), math.normalize(direction) * speed, steeringSpeed * Time.deltaTime, 0);
+                // velocity.z = 0;
+                subject.Velocity = velocity;
                 subject.Position += subject.Velocity * Time.deltaTime;
-                Flock[i] = subject;
+                _flock[i] = subject;
             }
         }
 

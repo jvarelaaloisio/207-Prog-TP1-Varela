@@ -2,7 +2,7 @@
 
 namespace Core.Steering
 {
-    public struct Boid
+    public struct Boid : IPosition
     {
         public float3 Position { get; set; }
         public float3 Velocity { get; set; }

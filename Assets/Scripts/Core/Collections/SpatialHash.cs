@@ -8,11 +8,11 @@ namespace Core.Collections
     {
         private readonly float _cellConversionFactor;
         private NativeParallelMultiHashMap<int2, T> _buckets;
-        public SpatialHash(float cellSize, int capacity)
+        public SpatialHash(float cellSize, int capacity, AllocatorManager.AllocatorHandle allocator)
         {
             CellSize = cellSize;
             _cellConversionFactor = 1 / cellSize;
-            _buckets = new NativeParallelMultiHashMap<int2, T>(capacity, Allocator.Persistent);
+            _buckets = new NativeParallelMultiHashMap<int2, T>(capacity, allocator);
         }
 
         public float CellSize { get; }

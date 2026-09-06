@@ -430,8 +430,8 @@ MonoBehaviour:
     <Weight>k__BackingField: 0.5
   alignmentGizmos: 0
   cohesion:
-    <Range>k__BackingField: 2
-    <Weight>k__BackingField: 0.1
+    <Range>k__BackingField: 0.5
+    <Weight>k__BackingField: 1
   cohesionGizmos: 0
   doDrawNeighboursGizmo: 1
   doDrawGridGizmo: 1
@@ -441,7 +441,7 @@ MonoBehaviour:
   doSpawnPerFrame: 1
   spawnsPerFrame: 1
   spawnPeriod: 0.025
-  cellSize: 2.5
+  cellSize: 1.5
   gridMin: -40
   gridMax: 40
 --- !u!4 &1052902292
