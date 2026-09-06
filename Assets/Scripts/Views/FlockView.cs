@@ -1,5 +1,3 @@
-using System.Linq;
-using Core.Game;
 using Core.Steering;
 using Unity.Collections;
 using Unity.Mathematics;

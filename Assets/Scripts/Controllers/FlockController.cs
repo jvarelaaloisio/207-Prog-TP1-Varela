@@ -120,8 +120,9 @@ namespace Controllers
                     return;
                 if (doSpawnPerFrame)
                 {
-                    for (int j = 0; i < flockCount && j < spawnsPerFrame; i++, j++)
+                    for (int j = 0; i < flockCount && j < spawnsPerFrame; j++)
                         Spawn(i);
+                    i += math.max(0, math.min(flockCount - i, spawnsPerFrame) - 1);
                     await Awaitable.NextFrameAsync();
                 }
                 else
