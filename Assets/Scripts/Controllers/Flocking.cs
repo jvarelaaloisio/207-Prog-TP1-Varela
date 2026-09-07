@@ -179,8 +179,8 @@ namespace Controllers
                                    + cohesionDirection
                                    + destinationDirection;
                 direction.z = 0;
-                subject.Velocity = RotateTowards(math.normalize(subject.Velocity), math.normalize(direction) * Speed, SteeringSpeed * DeltaTime);
-                subject.Position += subject.Velocity * DeltaTime;
+                subject.Velocity = RotateTowards(math.normalize(subject.Velocity), math.normalize(direction), SteeringSpeed * DeltaTime);
+                subject.Position += subject.Velocity * (Speed * DeltaTime);
                 Flock[index] = subject;
             }
 

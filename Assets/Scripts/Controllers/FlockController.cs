@@ -32,7 +32,7 @@ namespace Controllers
 
         [Header("Spawning")]
         [SerializeField] private bool doSpawnPerFrame = true;
-        [SerializeField] private int spawnsPerFrame = 10;
+        [SerializeField] private int spawnsBatchSize = 30;
         [Tooltip("Only used if spawnPerFrame is false")]
         [SerializeField] private float spawnPeriod = .1f;
 
@@ -100,18 +100,13 @@ namespace Controllers
             {
                 if (token.IsCancellationRequested)
                     return;
+                for (int j = 0, direction = 1; j < spawnsBatchSize && i + j < flockCount; j++, direction *= -1)
+                    Spawn(i, position + Vector3.up * j * direction);
+                i += math.max(0, math.min(flockCount - i, spawnsBatchSize) - 1);
                 if (doSpawnPerFrame)
-                {
-                    for (int j = 0; j < spawnsPerFrame && i + j < flockCount; j++)
-                        Spawn(i, position + Vector3.up * j);
-                    i += math.max(0, math.min(flockCount - i, spawnsPerFrame) - 1);
                     await Awaitable.NextFrameAsync();
-                }
                 else
-                {
-                    Spawn(i, position);
                     await Awaitable.WaitForSecondsAsync(spawnPeriod);
-                }
             }
 
             void Spawn(int i, Vector3 position)

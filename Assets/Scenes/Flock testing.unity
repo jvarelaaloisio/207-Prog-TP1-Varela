@@ -420,7 +420,7 @@ MonoBehaviour:
   logTag: FlockController
   clickInput: {fileID: 6500632813080886208, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   camera: {fileID: 961739752}
-  flockCount: 4096
+  flockCount: 8192
   separation:
     <Range>k__BackingField: 1
     <Weight>k__BackingField: 7
@@ -438,9 +438,9 @@ MonoBehaviour:
   destinationWeight: 1
   steeringSpeed: 2
   speed: 3
-  doSpawnPerFrame: 1
-  spawnsPerFrame: 10
-  spawnPeriod: 0.025
+  doSpawnPerFrame: 0
+  spawnsBatchSize: 30
+  spawnPeriod: 0.048
   cellSize: 1.5
   gridMin: -40
   gridMax: 40
@@ -482,7 +482,7 @@ MonoBehaviour:
   destinationMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: 8f9ee6e42e2005942a5b092cb9f2087c, type: 2}
   destinationMaterial: {fileID: 2100000, guid: 12046c518344e6948b805123b9163c86, type: 2}
-  unitSize: 0.03
+  unitSize: 0.04
 --- !u!1 &1310074093
 GameObject:
   m_ObjectHideFlags: 0
