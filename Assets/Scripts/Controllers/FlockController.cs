@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Collections;
@@ -16,31 +14,15 @@ namespace Controllers
 {
     public class FlockController : MacacoBehaviour, IFlockController
     {
-        [Serializable]
-        private class FlockDataBlock : ISerializationCallbackReceiver
-        {
-            [field: SerializeField] public float Range { get; private set; } = 1;
-            [field: SerializeField] public float Weight { get; private set; } = 1;
-            public float RangeSqr { get; private set; }
-
-            /// <inheritdoc />
-            public void OnBeforeSerialize()
-                => RangeSqr = Range * Range;
-
-            /// <inheritdoc />
-            public void OnAfterDeserialize()
-                => RangeSqr = Range * Range;
-        }
-
         [SerializeField] private InputActionReference clickInput;
         [SerializeField] private Camera camera;
 
         [SerializeField] private int flockCount = 100;
-        [SerializeField] private FlockDataBlock separation;
+        [SerializeField] private Flocking.DataBlock separation;
         [SerializeField] private bool separationGizmos;
-        [SerializeField] private FlockDataBlock alignment;
+        [SerializeField] private Flocking.DataBlock alignment;
         [SerializeField] private bool alignmentGizmos;
-        [SerializeField] private FlockDataBlock cohesion;
+        [SerializeField] private Flocking.DataBlock cohesion;
         [SerializeField] private bool cohesionGizmos;
         [SerializeField] private bool doDrawNeighboursGizmo;
         [SerializeField] private bool doDrawGridGizmo;
@@ -120,19 +102,19 @@ namespace Controllers
                     return;
                 if (doSpawnPerFrame)
                 {
-                    for (int j = 0; i < flockCount && j < spawnsPerFrame; j++)
-                        Spawn(i);
+                    for (int j = 0; j < spawnsPerFrame && i + j < flockCount; j++)
+                        Spawn(i, position + Vector3.up * j);
                     i += math.max(0, math.min(flockCount - i, spawnsPerFrame) - 1);
                     await Awaitable.NextFrameAsync();
                 }
                 else
                 {
-                    Spawn(i);
+                    Spawn(i, position);
                     await Awaitable.WaitForSecondsAsync(spawnPeriod);
                 }
             }
 
-            void Spawn(int i)
+            void Spawn(int i, Vector3 position)
             {
                 Flock.Add(new Boid {
                                        Position = position,
@@ -154,37 +136,33 @@ namespace Controllers
             _flockGrid.Clear();
             var spatialHashJob = _flockGrid.GetCompute(Flock.AsArray());
             JobHandle computeSpatialHash = spatialHashJob.ScheduleByRef(Flock.Length, 64);
-            computeSpatialHash.Complete();
-            for (int i = 0; i < Flock.Count; i++)
+
+            var steeringJob = _flocking.GetJob(Flock.AsArray(),
+                                               _flockGrid,
+                                               separation,
+                                               alignment,
+                                               cohesion,
+                                               Destination,
+                                               destinationWeight,
+                                               speed,
+                                               steeringSpeed,
+                                               Time.deltaTime);
+            steeringJob.ScheduleByRef(Flock.Length, 64, computeSpatialHash).Complete();
+
+            if (doDrawNeighboursGizmo)
             {
-                Boid subject = Flock[i];
-                var neighbours = new NativeList<Boid>(100, Allocator.Temp);
-                _flockGrid.Query(subject.Position.xy, separation.Range, ref neighbours);
-                float3 separationDirection = _flocking.ComputeSeparation(neighbours, subject, separation.RangeSqr) * separation.Weight;
-                float3 alignmentDirection = _flocking.ComputeAlignment(neighbours, subject, alignment.RangeSqr) * alignment.Weight;
-                float3 cohesionDirection = _flocking.ComputeCohesion(neighbours, subject, cohesion.RangeSqr) * cohesion.Weight;
-                float3 destinationDirection = math.normalize(Destination - subject.Position) * destinationWeight;
-                float3 direction = separationDirection
-                                   + alignmentDirection
-                                   + cohesionDirection
-                                   + destinationDirection;
-                if (doDrawNeighboursGizmo)
+                foreach (Boid subject in Flock)
+                {
+                    var neighbours = new NativeList<Boid>(64, Allocator.Temp);
+                    _flockGrid.Query(subject.Position.xy, separation.Range, ref neighbours);
                     foreach (Boid neighbour in neighbours)
                         DrawLine(subject.Position, neighbour.Position, Color.darkGreen);
-                direction.z = 0;
-                Vector3 velocity = Vector3.RotateTowards(math.normalize(subject.Velocity), math.normalize(direction) * speed, steeringSpeed * Time.deltaTime, 0);
-                // velocity.z = 0;
-                subject.Velocity = velocity;
-                subject.Position += subject.Velocity * Time.deltaTime;
-                _flock[i] = subject;
+                }
             }
         }
 
         private void OnDrawGizmos()
         {
-            Gizmos.color = Color.darkRed;
-            Gizmos.DrawWireSphere(Destination, 1f);
-
         #region Hash Grid
 
             if (!doDrawGridGizmo)
@@ -222,6 +200,8 @@ namespace Controllers
 
         private void OnDrawGizmosSelected()
         {
+            if (!_flock.IsCreated)
+                return;
             Gizmos.color = new Color(1, 1, 1, 0.35f);
             foreach (Boid boid in Flock)
             {

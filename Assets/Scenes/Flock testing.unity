@@ -352,7 +352,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 15
+  orthographic size: 25
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -433,13 +433,13 @@ MonoBehaviour:
     <Range>k__BackingField: 0.5
     <Weight>k__BackingField: 1
   cohesionGizmos: 0
-  doDrawNeighboursGizmo: 1
+  doDrawNeighboursGizmo: 0
   doDrawGridGizmo: 1
   destinationWeight: 1
   steeringSpeed: 2
   speed: 3
   doSpawnPerFrame: 1
-  spawnsPerFrame: 1
+  spawnsPerFrame: 10
   spawnPeriod: 0.025
   cellSize: 1.5
   gridMin: -40

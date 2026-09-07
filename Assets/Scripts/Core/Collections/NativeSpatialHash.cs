@@ -23,8 +23,10 @@ namespace Core.Collections
         public float CellSize { get; }
 
         public bool IsCreated => _buckets.IsCreated;
+
         public int2 CalculateCell(float2 position)
             => CalculateCell(position, _cellConversionFactor);
+
         public static int2 CalculateCell(float2 position, float cellConversionFactor)
             => new((int)math.floor(position.x * cellConversionFactor),
                    (int)math.floor(position.y * cellConversionFactor));
@@ -32,10 +34,6 @@ namespace Core.Collections
         /// <summary>Parallel-safe writer, intended to be held by an IJobParallelFor.</summary>
         public NativeParallelMultiHashMap<int2, T>.ParallelWriter AsParallelWriter()
             => _buckets.AsParallelWriter();
-
-        /// <summary>Adds an element from within a job, writing through the given parallel writer (atomic, thread-safe).</summary>
-        public void AddParallel(NativeParallelMultiHashMap<int2, T>.ParallelWriter writer, T value, float2 position)
-            => writer.Add(CalculateCell(position), value);
 
         /// <summary>Adds to <paramref name="resultOutput"/> every element stored in the cells overlapped by the AABB
         /// around <paramref name="position"/> with the given <paramref name="radius"/> (1, 2 or 4 cells when the radius
@@ -49,6 +47,16 @@ namespace Core.Collections
                 foreach (T value in _buckets.GetValuesForKey(new int2(cx, cy)))
                     resultOutput.Add(value);
         }
+
+        /// <summary /> Returns a Job that does a query for each element and writes it to a hashMap.
+        /// <param name="elements">The elements which's positions will be queried</param>
+        /// <param name="radius">The radius of the query</param>
+        /// <param name="resultOutput">The HashMap to save the found elements. Key: Index, Values: elements found</param>
+        /// <returns></returns>
+        public ParallelQuery GetParallelQuery(in NativeArray<T> elements,
+                                              float radius,
+                                              NativeParallelMultiHashMap<int, T>.ParallelWriter resultOutput)
+            => new(elements, radius, _cellConversionFactor, _buckets, resultOutput);
 
         /// <summary/> Creates a Job that computes all elements into this Spatial Hash
         /// <param name="elements">All the elements that need to be added.</param>
@@ -64,6 +72,8 @@ namespace Core.Collections
             if (_buckets.IsCreated)
                 _buckets.Dispose();
         }
+
+    #region Compute Job
 
         [BurstCompile]
         public struct Compute : IJobParallelFor
@@ -85,6 +95,43 @@ namespace Core.Collections
             public void Execute(int index)
                 => _mapWriter.Add(CalculateCell(_elements[index].Position.xy, _cellConversionFactor),
                                   _elements[index]);
+        }
+
+    #endregion
+
+        public struct ParallelQuery : IJobParallelFor
+        {
+            [ReadOnly] private readonly NativeArray<T> _elements;
+            private readonly float _radius;
+            private readonly float _cellConversionFactor;
+            [ReadOnly] private NativeParallelMultiHashMap<int2, T> _mapReader;
+            private NativeParallelMultiHashMap<int, T>.ParallelWriter _resultOutput;
+
+            public ParallelQuery(NativeArray<T> elements,
+                                 float radius,
+                                 float cellConversionFactor,
+                                 NativeParallelMultiHashMap<int2, T> mapReader,
+                                 NativeParallelMultiHashMap<int, T>.ParallelWriter resultOutput)
+            {
+                _elements = elements;
+                _radius = radius;
+                _cellConversionFactor = cellConversionFactor;
+                _mapReader = mapReader;
+                _resultOutput = resultOutput;
+            }
+
+            /// <inheritdoc />
+            public void Execute(int index)
+            {
+                T subject = _elements[index];
+                float2 position = subject.Position.xy;
+                int2 min = CalculateCell(position - _radius, _cellConversionFactor);
+                int2 max = CalculateCell(position + _radius, _cellConversionFactor);
+                for (int cx = min.x; cx <= max.x; cx++)
+                for (int cy = min.y; cy <= max.y; cy++)
+                    foreach (T value in _mapReader.GetValuesForKey(new int2(cx, cy)))
+                        _resultOutput.Add(index, value);
+            }
         }
     }
 }
