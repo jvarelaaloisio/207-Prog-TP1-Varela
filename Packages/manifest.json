@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.jvarelaaloisio.health": "1.0.2",
     "com.unity.2d.animation": "16.0.0",
     "com.unity.2d.aseprite": "6.0.0",
     "com.unity.2d.psdimporter": "15.0.0",
