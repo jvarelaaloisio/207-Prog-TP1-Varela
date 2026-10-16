@@ -1,0 +1,22 @@
+﻿<Solution>
+  <Project Path="LitMotion.csproj" />
+  <Project Path="VarelaAloisio.Ships.UI.Runtime.csproj" />
+  <Project Path="LitMotion.Extensions.csproj" />
+  <Project Path="VarelaAloisio.Ships.Core.Runtime.csproj" />
+  <Project Path="LitMotion.Animation.csproj" />
+  <Project Path="LitMotion.Tests.Editor.csproj" />
+  <Project Path="VarelaAloisio.Ships.Units.Runtime.csproj" />
+  <Project Path="VarelaAloisio.HealthSystem.Unity.Runtime.csproj" />
+  <Project Path="LitMotion.Tests.Runtime.csproj" />
+  <Project Path="Wingman.csproj" />
+  <Project Path="VarelaAloisio.Ships.Management.Runtime.csproj" />
+  <Project Path="VarelaAloisio.Ships.Controllers.Runtime.csproj" />
+  <Project Path="Runtime.csproj" />
+  <Project Path="VarelaAloisio.Ships.Utilities.Runtime.csproj" />
+  <Project Path="VarelaAloisio.Ships.Core.Editor.csproj" />
+  <Project Path="LitMotion.Editor.csproj" />
+  <Project Path="VarelaAloisio.Ships.Steering.Runtime.csproj" />
+  <Project Path="LitMotion.Animation.Editor.csproj" />
+  <Project Path="LitMotion.Tests.Benchmark.csproj" />
+  <Project Path="VarelaAloisio.Ships.Views.Runtime.csproj" />
+</Solution>

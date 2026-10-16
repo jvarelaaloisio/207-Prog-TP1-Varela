@@ -5,7 +5,6 @@ using Core.Collections;
 using Core.Game;
 using Core.Services;
 using Core.Steering;
-using HealthSystem.Runtime;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -17,7 +16,7 @@ namespace Controllers
 {
     public class FlockController : MacacoBehaviour, IFlockController
     {
-        [SerializeField] private InputActionReference clickInput;
+        //TODO: Remove once we have spawn points
         [SerializeField] private Camera camera;
 
         [SerializeField] private int flockCount = 100;
@@ -32,7 +31,10 @@ namespace Controllers
         [SerializeField] private float destinationWeight = 1f;
         [SerializeField] private float steeringSpeed = 2;
         [SerializeField] private float speed = 1;
+
+        [Header("Combat")]
         [SerializeField] private int expectedUniqueDestinationQuantity = 20;
+        [SerializeField] private int maxAmountOfBoidsPerObjective = 10;
 
         [Header("Spawning")]
         [SerializeField] private bool doSpawnPerFrame = true;
@@ -50,7 +52,7 @@ namespace Controllers
         private NativeSpatialHash<Boid> _flockGrid;
         private NativeList<Boid> _flock;
         private NativeList<BoidFlags> _flockFlags;
-        private NativeHashMap<float3, NativeList<int>> _boidIndexesPerDestination = new ();
+        private NativeHashMap<float3, NativeList<int>> _boidIndexesPerDestination;
 
         private IObjectivesRepository _objectivesRepository;
         public float3 Destination { get; private set; } = float3.zero;
@@ -69,11 +71,6 @@ namespace Controllers
         protected override void OnEnable()
         {
             base.OnEnable();
-            if (clickInput)
-            {
-                clickInput.action.Enable();
-                clickInput.action.performed += HandleClick;
-            }
             if (_flock.IsCreated)
                 _flock.Dispose();
             _flock = new NativeList<Boid>(flockCount, Allocator.Persistent);
@@ -86,21 +83,17 @@ namespace Controllers
                 _boidIndexesPerDestination.Dispose();
             _boidIndexesPerDestination = new NativeHashMap<float3, NativeList<int>>(expectedUniqueDestinationQuantity, Allocator.Persistent);
             _ = SpawnFlock(DisableCancellationToken);
+        }
 
+        protected override void Start()
+        {
+            base.Start();
+
+            //TODO: Move to OnEnable when done testing
             if (Service.TryGet(out _objectivesRepository))
             {
                 _objectivesRepository.OnDamageableAdded += HandleDamageableAdded;
                 _objectivesRepository.OnDamageableRemoved += HandleDamageableRemoved;
-            }
-        }
-
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-            if (clickInput)
-            {
-                clickInput.action.Disable();
-                clickInput.action.performed -= HandleClick;
             }
         }
 
@@ -141,15 +134,8 @@ namespace Controllers
                                        Velocity = Vector3.right * speed,
                                        Id = i,
                                    });
+                _flockFlags.Add(BoidFlags.IsActive | BoidFlags.IsFollowingPlayer);
             }
-        }
-
-        [Obsolete("This is a testing method, it should be removed from here.")]
-        private void HandleClick(InputAction.CallbackContext data)
-        {
-            Vector3 destination = camera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-            destination.z = 0;
-            Destination = destination;
         }
 
         private void Update()
@@ -187,24 +173,48 @@ namespace Controllers
             float3 destination = objective.Position;
             if (!_boidIndexesPerDestination.TryGetValue(destination, out var indexes))
             {
-                indexes = new NativeList<int>(10, Allocator.Persistent);
+                indexes = new NativeList<int>(maxAmountOfBoidsPerObjective, Allocator.Persistent);
                 _boidIndexesPerDestination.Add(destination, indexes);
             }
 
-            if (indexes.Count < 0 /*Max quantity of attackers*/)
+            int freeSpots = maxAmountOfBoidsPerObjective - indexes.Count;
+            if (freeSpots > 0)
             {
-                //TODO: Seek available boids (the ones following the player) and add them till full.
+                for (int i = 0; i < _flockFlags.Count; i++)
+                {
+                    if (!_flockFlags[i].HasFlag(BoidFlags.IsFollowingPlayer))
+                        continue;
+
+                    Boid boid = _flock[i];
+                    boid.Destination = objective.Position;
+                    _flock[i] = boid;
+                    _flockFlags[i] &= ~BoidFlags.IsFollowingPlayer;
+
+                    indexes.Add(i);
+                    freeSpots--;
+                    if (freeSpots <= 0)
+                        break;
+                }
             }
+            _boidIndexesPerDestination[destination] = indexes;
         }
 
         private void HandleDamageableRemoved(DestroyableObjective objective)
         {
             float3 destination = objective.Position;
-            if (_boidIndexesPerDestination.TryGetValue(destination, out var indexes))
+            if (!_boidIndexesPerDestination.TryGetValue(destination, out var indexes))
+                return;
+            foreach (int index in indexes)
             {
-                //TODO: Move these indices to other objectives.
-                //TODO: Add a max quantity of attackers serialized field
+                _flockFlags[index] |= BoidFlags.IsFollowingPlayer;
+                _flockFlags[index] &= ~BoidFlags.HasDestination;
+                Boid boid = _flock[index];
+                boid.Destination = new float3();
+                _flock[index] = boid;
             }
+            //TODO: Move these indices to other objectives.
+            //TODO: Add a max quantity of attackers serialized field
+            _boidIndexesPerDestination.Remove(destination);
         }
         private void Handle()
         {

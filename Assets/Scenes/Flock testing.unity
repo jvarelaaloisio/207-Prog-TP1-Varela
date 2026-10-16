@@ -246,6 +246,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &565675982
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 565675984}
+  - component: {fileID: 565675983}
+  m_Layer: 0
+  m_Name: AsteroidsController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &565675983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 565675982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3f7534211ece6afa821846b1861996, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VarelaAloisio.Ships.Controllers.Runtime::Controllers.AsteroidsController
+  logger:
+    reference: {fileID: 11400000, guid: e82d9bccf4547774dbc9fdafba6573a5, type: 2}
+  gizmo:
+    reference: {fileID: 11400000, guid: e82d9bccf4547774dbc9fdafba6573a5, type: 2}
+  logTag: AsteroidsController
+  clickInput: {fileID: 6500632813080886208, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  camera: {fileID: 961739752}
+  asteroidPrefab:
+    reference: {fileID: 5710570875946322311, guid: bd37d1b74ec7f1c0d936beae01b924eb, type: 3}
+--- !u!4 &565675984
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 565675982}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 813.5, y: 380, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &961739749
 GameObject:
   m_ObjectHideFlags: 0
@@ -418,9 +471,8 @@ MonoBehaviour:
   gizmo:
     reference: {fileID: 11400000, guid: e82d9bccf4547774dbc9fdafba6573a5, type: 2}
   logTag: FlockController
-  clickInput: {fileID: 6500632813080886208, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   camera: {fileID: 961739752}
-  flockCount: 8192
+  flockCount: 1023
   separation:
     <Range>k__BackingField: 1
     <Weight>k__BackingField: 7
@@ -435,9 +487,11 @@ MonoBehaviour:
   cohesionGizmos: 0
   doDrawNeighboursGizmo: 0
   doDrawGridGizmo: 1
-  destinationWeight: 1
+  destinationWeight: 5
   steeringSpeed: 2
   speed: 3
+  expectedUniqueDestinationQuantity: 20
+  maxAmountOfBoidsPerObjective: 25
   doSpawnPerFrame: 0
   spawnsBatchSize: 30
   spawnPeriod: 0.048
@@ -483,6 +537,55 @@ MonoBehaviour:
   material: {fileID: 2100000, guid: 8f9ee6e42e2005942a5b092cb9f2087c, type: 2}
   destinationMaterial: {fileID: 2100000, guid: 12046c518344e6948b805123b9163c86, type: 2}
   unitSize: 0.04
+--- !u!1 &1071691526
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1071691528}
+  - component: {fileID: 1071691527}
+  m_Layer: 0
+  m_Name: Objectives Repository
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1071691527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1071691526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cc5c36f3e50429db53cf28653702548, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VarelaAloisio.Ships.Units.Runtime::Units.ObjectivesRepository
+  logger:
+    reference: {fileID: 11400000, guid: e82d9bccf4547774dbc9fdafba6573a5, type: 2}
+  gizmo:
+    reference: {fileID: 11400000, guid: e82d9bccf4547774dbc9fdafba6573a5, type: 2}
+  logTag: ObjectivesRepository
+--- !u!4 &1071691528
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1071691526}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 813.5, y: 380, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1310074093
 GameObject:
   m_ObjectHideFlags: 0
@@ -1006,3 +1109,5 @@ SceneRoots:
   - {fileID: 203844589}
   - {fileID: 1559394930}
   - {fileID: 2039123514}
+  - {fileID: 1071691528}
+  - {fileID: 565675984}

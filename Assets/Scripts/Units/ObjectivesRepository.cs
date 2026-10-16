@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using Core.Game;
 using Core.Services;
 using VarelaAloisio.Core;
+using VarelaAloisio.Core.Attributes;
 
 namespace Units
 {
+    [Service(typeof(IObjectivesRepository))]
     public class ObjectivesRepository : MacacoBehaviour, IObjectivesRepository
     {
         private readonly HashSet<DestroyableObjective> _objectives = new ();
