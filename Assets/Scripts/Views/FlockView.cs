@@ -26,12 +26,13 @@ namespace Views
             if (mesh && material)
             {
                 var matrices = new Matrix4x4[flock.Length];
+                Vector3 scale = Vector3.one * unitSize;
                 for (int i = 0; i < flock.Length; i++)
                 {
                     Boid boid = flock[i];
                     matrices[i] = Matrix4x4.TRS(boid.Position,
                                                 Quaternion.LookRotation(math.normalize(boid.Velocity), Vector3.back),
-                                                Vector3.one * unitSize);
+                                                scale);
                 }
 
                 Graphics.RenderMeshInstanced(new RenderParams(material), mesh, 0,
