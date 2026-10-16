@@ -123,16 +123,15 @@ namespace Controllers
         /// <param name="steeringSpeed"></param>
         /// <param name="deltaTime"></param>
         /// <returns>A Steering Job to be scheduled</returns>
-        public Steer GetJob(NativeArray<Boid> flock,
-                                  NativeSpatialHash<Boid> grid,
-                                  DataBlock separation,
-                                  DataBlock alignment,
-                                  DataBlock cohesion,
-                                  float3 destination,
-                                  float destinationWeight,
-                                  float speed,
-                                  float steeringSpeed,
-                                  float deltaTime)
+        public static Steer GetJob(NativeArray<Boid> flock,
+                                   NativeSpatialHash<Boid> grid,
+                                   DataBlock separation,
+                                   DataBlock alignment,
+                                   DataBlock cohesion,
+                                   float destinationWeight,
+                                   float speed,
+                                   float steeringSpeed,
+                                   float deltaTime)
             => new() {
                          Flock = flock,
                          Grid = grid,
@@ -140,7 +139,6 @@ namespace Controllers
                          Separation = separation,
                          Alignment = alignment,
                          Cohesion = cohesion,
-                         Destination = destination,
                          DestinationWeight = destinationWeight,
                          Speed = speed,
                          SteeringSpeed = steeringSpeed,
@@ -156,7 +154,6 @@ namespace Controllers
             public DataBlock Separation;
             public DataBlock Alignment;
             public DataBlock Cohesion;
-            public float3 Destination;
             public float DestinationWeight;
             public float SteeringSpeed;
             public float Speed;
@@ -173,7 +170,7 @@ namespace Controllers
                 float3 separationDirection = ComputeSeparation(neighbours, subject, Separation.RangeSqr) * Separation.Weight;
                 float3 alignmentDirection = ComputeAlignment(neighbours, subject, Alignment.RangeSqr) * Alignment.Weight;
                 float3 cohesionDirection = ComputeCohesion(neighbours, subject, Cohesion.RangeSqr) * Cohesion.Weight;
-                float3 destinationDirection = math.normalize(Destination - subject.Position) * DestinationWeight;
+                float3 destinationDirection = math.normalize(subject.Destination - subject.Position) * DestinationWeight;
                 float3 direction = separationDirection
                                    + alignmentDirection
                                    + cohesionDirection

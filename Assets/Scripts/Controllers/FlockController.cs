@@ -1,8 +1,11 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Collections;
+using Core.Game;
+using Core.Services;
 using Core.Steering;
-using Unity.Burst;
+using HealthSystem.Runtime;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -29,6 +32,7 @@ namespace Controllers
         [SerializeField] private float destinationWeight = 1f;
         [SerializeField] private float steeringSpeed = 2;
         [SerializeField] private float speed = 1;
+        [SerializeField] private int expectedUniqueDestinationQuantity = 20;
 
         [Header("Spawning")]
         [SerializeField] private bool doSpawnPerFrame = true;
@@ -44,9 +48,12 @@ namespace Controllers
 
         private Flocking _flocking;
         private NativeSpatialHash<Boid> _flockGrid;
-
-        public float3 Destination { get; private set; } = float3.zero;
         private NativeList<Boid> _flock;
+        private NativeList<BoidFlags> _flockFlags;
+        private NativeHashMap<float3, NativeList<int>> _boidIndexesPerDestination = new ();
+
+        private IObjectivesRepository _objectivesRepository;
+        public float3 Destination { get; private set; } = float3.zero;
 
         public NativeList<Boid> Flock => _flock;
 
@@ -70,7 +77,21 @@ namespace Controllers
             if (_flock.IsCreated)
                 _flock.Dispose();
             _flock = new NativeList<Boid>(flockCount, Allocator.Persistent);
+
+            if (_flockFlags.IsCreated)
+                _flockFlags.Dispose();
+            _flockFlags = new NativeList<BoidFlags>(flockCount, Allocator.Persistent);
+
+            if (_boidIndexesPerDestination.IsCreated)
+                _boidIndexesPerDestination.Dispose();
+            _boidIndexesPerDestination = new NativeHashMap<float3, NativeList<int>>(expectedUniqueDestinationQuantity, Allocator.Persistent);
             _ = SpawnFlock(DisableCancellationToken);
+
+            if (Service.TryGet(out _objectivesRepository))
+            {
+                _objectivesRepository.OnDamageableAdded += HandleDamageableAdded;
+                _objectivesRepository.OnDamageableRemoved += HandleDamageableRemoved;
+            }
         }
 
         protected override void OnDisable()
@@ -90,6 +111,10 @@ namespace Controllers
                 _flockGrid.Dispose();
             if (_flock.IsCreated)
                 _flock.Dispose();
+            if (_flockFlags.IsCreated)
+                _flockFlags.Dispose();
+            if (_boidIndexesPerDestination.IsCreated)
+                _boidIndexesPerDestination.Dispose();
         }
 
         private async Task SpawnFlock(CancellationToken token)
@@ -119,6 +144,7 @@ namespace Controllers
             }
         }
 
+        [Obsolete("This is a testing method, it should be removed from here.")]
         private void HandleClick(InputAction.CallbackContext data)
         {
             Vector3 destination = camera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
@@ -132,16 +158,15 @@ namespace Controllers
             var spatialHashJob = _flockGrid.GetCompute(Flock.AsArray());
             JobHandle computeSpatialHash = spatialHashJob.ScheduleByRef(Flock.Length, 64);
 
-            var steeringJob = _flocking.GetJob(Flock.AsArray(),
-                                               _flockGrid,
-                                               separation,
-                                               alignment,
-                                               cohesion,
-                                               Destination,
-                                               destinationWeight,
-                                               speed,
-                                               steeringSpeed,
-                                               Time.deltaTime);
+            var steeringJob = Flocking.GetJob(Flock.AsArray(),
+                                              _flockGrid,
+                                              separation,
+                                              alignment,
+                                              cohesion,
+                                              destinationWeight,
+                                              speed,
+                                              steeringSpeed,
+                                              Time.deltaTime);
             steeringJob.ScheduleByRef(Flock.Length, 64, computeSpatialHash).Complete();
 
             if (doDrawNeighboursGizmo)
@@ -153,6 +178,41 @@ namespace Controllers
                     foreach (Boid neighbour in neighbours)
                         DrawLine(subject.Position, neighbour.Position, Color.darkGreen);
                 }
+            }
+        }
+
+
+        private void HandleDamageableAdded(DestroyableObjective objective)
+        {
+            float3 destination = objective.Position;
+            if (!_boidIndexesPerDestination.TryGetValue(destination, out var indexes))
+            {
+                indexes = new NativeList<int>(10, Allocator.Persistent);
+                _boidIndexesPerDestination.Add(destination, indexes);
+            }
+
+            if (indexes.Count < 0 /*Max quantity of attackers*/)
+            {
+                //TODO: Seek available boids (the ones following the player) and add them till full.
+            }
+        }
+
+        private void HandleDamageableRemoved(DestroyableObjective objective)
+        {
+            float3 destination = objective.Position;
+            if (_boidIndexesPerDestination.TryGetValue(destination, out var indexes))
+            {
+                //TODO: Move these indices to other objectives.
+                //TODO: Add a max quantity of attackers serialized field
+            }
+        }
+        private void Handle()
+        {
+            for (int i = 0; i < Flock.Count; i++)
+            {
+                Boid boid = Flock[i];
+                boid.Destination = Destination;
+                _flock[i] = boid;
             }
         }
 
