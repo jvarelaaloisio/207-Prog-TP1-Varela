@@ -54,7 +54,6 @@ namespace Controllers
         private NativeList<BoidFlags> _flockFlags;
         private NativeHashMap<float3, NativeList<int>> _boidIndexesPerDestination;
 
-        private IObjectivesRepository _objectivesRepository;
         public float3 Destination { get; private set; } = float3.zero;
 
         public NativeList<Boid> Flock => _flock;
@@ -68,7 +67,7 @@ namespace Controllers
             _flockGrid = new NativeSpatialHash<Boid>(cellSize, flockCount, Allocator.Persistent);
         }
 
-        protected override void OnEnable()
+        protected override async void OnEnable()
         {
             base.OnEnable();
             if (_flock.IsCreated)
@@ -83,17 +82,25 @@ namespace Controllers
                 _boidIndexesPerDestination.Dispose();
             _boidIndexesPerDestination = new NativeHashMap<float3, NativeList<int>>(expectedUniqueDestinationQuantity, Allocator.Persistent);
             _ = SpawnFlock(DisableCancellationToken);
+
+            IObjectivesRepository objectivesRepository;
+            while (!Service.TryGet(out objectivesRepository))
+            {
+                await Awaitable.NextFrameAsync();
+                if (DisableCancellationToken.IsCancellationRequested)
+                    return;
+            }
+            objectivesRepository.OnDamageableAdded += HandleDamageableAdded;
+            objectivesRepository.OnDamageableRemoved += HandleDamageableRemoved;
         }
 
-        protected override void Start()
+        protected override void OnDisable()
         {
-            base.Start();
-
-            //TODO: Move to OnEnable when done testing
-            if (Service.TryGet(out _objectivesRepository))
+            base.OnDisable();
+            if (Service.TryGet(out IObjectivesRepository objectivesRepository))
             {
-                _objectivesRepository.OnDamageableAdded += HandleDamageableAdded;
-                _objectivesRepository.OnDamageableRemoved += HandleDamageableRemoved;
+                objectivesRepository.OnDamageableAdded -= HandleDamageableAdded;
+                objectivesRepository.OnDamageableRemoved -= HandleDamageableRemoved;
             }
         }
 
